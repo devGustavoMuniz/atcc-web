@@ -55,6 +55,22 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useTableFilters } from '@/hooks/use-table-filters';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
 import { destroy, index, update as updateContractor } from '@/routes/admin/contractors';
 
 type ContractorRow = {
@@ -234,429 +250,243 @@ export default function ContractorsIndex({
                         ) : (
                             <>
                                 <div className="overflow-x-auto rounded-lg border border-border/70">
-                                    <table className="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
-                                        <thead className="text-muted-foreground">
-                                            <tr>
-                                                <th className="border-r border-border/80 px-5 pt-4 pb-3 align-top font-medium">
+                                    <Table className="min-w-[640px]">
+                                        <TableHeader>
+                                            <TableRow className="hover:bg-transparent">
+                                                <TableHead className="border-r border-border/80 px-5 pt-4 pb-3 align-top">
                                                     <div className="space-y-3">
                                                         <button
                                                             type="button"
                                                             className={`flex w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors ${
-                                                                filters.sort ===
-                                                                'name'
+                                                                filters.sort === 'name'
                                                                     ? 'text-foreground'
                                                                     : 'hover:text-foreground'
                                                             }`}
-                                                            onClick={() =>
-                                                                handleSortChange(
-                                                                    'name',
-                                                                )
-                                                            }
+                                                            onClick={() => handleSortChange('name')}
                                                         >
                                                             <span>Nome</span>
-                                                            {getSortIcon(
-                                                                'name',
-                                                                filters.sort,
-                                                                filters.direction,
-                                                            )}
+                                                            {getSortIcon('name', filters.sort, filters.direction)}
                                                         </button>
                                                         <Input
-                                                            value={
-                                                                filters.search_name
-                                                            }
-                                                            onChange={(event) =>
-                                                                handleFilterChange(
-                                                                    'search_name',
-                                                                    event.target
-                                                                        .value,
-                                                                )
-                                                            }
+                                                            value={filters.search_name}
+                                                            onChange={(event) => handleFilterChange('search_name', event.target.value)}
                                                             placeholder="Buscar por nome"
                                                         />
                                                     </div>
-                                                </th>
-                                                <th className="border-r border-border/80 px-5 pt-4 pb-3 align-top font-medium">
+                                                </TableHead>
+                                                <TableHead className="border-r border-border/80 px-5 pt-4 pb-3 align-top">
                                                     <div className="space-y-3">
                                                         <button
                                                             type="button"
                                                             className={`flex w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors ${
-                                                                filters.sort ===
-                                                                'cnpj'
+                                                                filters.sort === 'cnpj'
                                                                     ? 'text-foreground'
                                                                     : 'hover:text-foreground'
                                                             }`}
-                                                            onClick={() =>
-                                                                handleSortChange(
-                                                                    'cnpj',
-                                                                )
-                                                            }
+                                                            onClick={() => handleSortChange('cnpj')}
                                                         >
                                                             <span>CNPJ</span>
-                                                            {getSortIcon(
-                                                                'cnpj',
-                                                                filters.sort,
-                                                                filters.direction,
-                                                            )}
+                                                            {getSortIcon('cnpj', filters.sort, filters.direction)}
                                                         </button>
                                                         <Input
-                                                            value={
-                                                                filters.search_cnpj
-                                                            }
-                                                            onChange={(event) =>
-                                                                handleFilterChange(
-                                                                    'search_cnpj',
-                                                                    event.target
-                                                                        .value,
-                                                                )
-                                                            }
+                                                            value={filters.search_cnpj}
+                                                            onChange={(event) => handleFilterChange('search_cnpj', event.target.value)}
                                                             placeholder="Buscar por CNPJ"
                                                         />
                                                     </div>
-                                                </th>
-                                                <th className="border-r border-border/80 px-5 pt-4 pb-3 align-top font-medium">
+                                                </TableHead>
+                                                <TableHead className="border-r border-border/80 px-5 pt-4 pb-3 align-top">
                                                     <div className="space-y-3">
                                                         <button
                                                             type="button"
                                                             className={`flex w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors ${
-                                                                filters.sort ===
-                                                                'active'
+                                                                filters.sort === 'active'
                                                                     ? 'text-foreground'
                                                                     : 'hover:text-foreground'
                                                             }`}
-                                                            onClick={() =>
-                                                                handleSortChange(
-                                                                    'active',
-                                                                )
-                                                            }
+                                                            onClick={() => handleSortChange('active')}
                                                         >
                                                             <span>Status</span>
-                                                            {getSortIcon(
-                                                                'active',
-                                                                filters.sort,
-                                                                filters.direction,
-                                                            )}
+                                                            {getSortIcon('active', filters.sort, filters.direction)}
                                                         </button>
                                                         <Select
-                                                            value={
-                                                                filters.status ===
-                                                                ''
-                                                                    ? 'all'
-                                                                    : filters.status
-                                                            }
-                                                            onValueChange={(
-                                                                value,
-                                                            ) =>
-                                                                handleFilterChange(
-                                                                    'status',
-                                                                    value ===
-                                                                        'all'
-                                                                        ? ''
-                                                                        : value,
-                                                                )
+                                                            value={filters.status === '' ? 'all' : filters.status}
+                                                            onValueChange={(value) =>
+                                                                handleFilterChange('status', value === 'all' ? '' : value)
                                                             }
                                                         >
                                                             <SelectTrigger className="w-full">
                                                                 <SelectValue placeholder="Todos" />
                                                             </SelectTrigger>
                                                             <SelectContent align="start">
-                                                                <SelectItem value="all">
-                                                                    Todos
-                                                                </SelectItem>
-                                                                <SelectItem value="1">
-                                                                    Ativo
-                                                                </SelectItem>
-                                                                <SelectItem value="0">
-                                                                    Inativo
-                                                                </SelectItem>
+                                                                <SelectItem value="all">Todos</SelectItem>
+                                                                <SelectItem value="1">Ativo</SelectItem>
+                                                                <SelectItem value="0">Inativo</SelectItem>
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
-                                                </th>
-                                                <th className="px-5 pt-4 pb-3 text-center align-middle font-medium">
+                                                </TableHead>
+                                                <TableHead className="px-5 pt-4 pb-3 text-center align-middle">
                                                     Ações
-                                                </th>
-                                            </tr>
-                                            <tr>
-                                                <th
-                                                    colSpan={4}
-                                                    className="h-0 border-b border-border/70 p-0"
-                                                />
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {contractors.data.map(
-                                                (contractor, rowIndex) => (
-                                                    <tr
-                                                        key={contractor.id}
-                                                        className="cursor-pointer transition-colors odd:bg-muted/[0.16] even:bg-background hover:bg-muted/30"
-                                                        onClick={() =>
-                                                            handleView(
-                                                                contractor,
-                                                            )
-                                                        }
-                                                    >
-                                                        <td
-                                                            className={`border-r border-border/70 px-5 py-4 align-middle ${
-                                                                rowIndex ===
-                                                                contractors.data.length -
-                                                                    1
-                                                                    ? ''
-                                                                    : 'border-b'
-                                                            }`}
+                                                </TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {contractors.data.map((contractor) => (
+                                                <TableRow
+                                                    key={contractor.id}
+                                                    className="cursor-pointer odd:bg-muted/[0.16] even:bg-background hover:bg-muted/30"
+                                                    onClick={() => handleView(contractor)}
+                                                >
+                                                    <TableCell className="border-r border-border/70 px-5 py-4 align-middle font-medium">
+                                                        <div className="flex min-h-10 items-center justify-center text-center">
+                                                            {contractor.name}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="border-r border-border/70 px-5 py-4 align-middle text-muted-foreground">
+                                                        <div className="flex min-h-10 items-center justify-center text-center">
+                                                            {formatCnpj(contractor.cnpj)}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="border-r border-border/70 px-5 py-4 align-middle">
+                                                        <div
+                                                            className="flex min-h-10 items-center justify-center"
+                                                            onClick={(event) => event.stopPropagation()}
                                                         >
-                                                            <div className="flex min-h-10 items-center justify-center text-center font-medium">
-                                                                {
-                                                                    contractor.name
-                                                                }
-                                                            </div>
-                                                        </td>
-                                                        <td
-                                                            className={`border-r border-border/70 px-5 py-4 align-middle text-muted-foreground ${
-                                                                rowIndex ===
-                                                                contractors.data.length -
-                                                                    1
-                                                                    ? ''
-                                                                    : 'border-b'
-                                                            }`}
-                                                        >
-                                                            <div className="flex min-h-10 items-center justify-center text-center">
-                                                                {formatCnpj(
-                                                                    contractor.cnpj,
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                        <td
-                                                            className={`border-r border-border/70 px-5 py-4 align-middle ${
-                                                                rowIndex ===
-                                                                contractors.data.length -
-                                                                    1
-                                                                    ? ''
-                                                                    : 'border-b'
-                                                            }`}
-                                                        >
-                                                            <div
-                                                                className="flex min-h-10 items-center justify-center"
-                                                                onClick={(
-                                                                    event,
-                                                                ) =>
-                                                                    event.stopPropagation()
-                                                                }
-                                                            >
-                                                                <StatusToggle
-                                                                    ariaLabel={`Alternar status de ${contractor.name}`}
-                                                                    checked={
-                                                                        contractor.active
-                                                                    }
-                                                                    disabled={
-                                                                        updatingContractorId ===
-                                                                        contractor.id
-                                                                    }
-                                                                    onPressedChange={() =>
-                                                                        handleStatusToggle(
-                                                                            contractor,
-                                                                        )
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        </td>
-                                                        <td
-                                                            className={`border-border/70 px-5 py-4 align-middle ${
-                                                                rowIndex ===
-                                                                contractors.data.length -
-                                                                    1
-                                                                    ? ''
-                                                                    : 'border-b'
-                                                            }`}
-                                                        >
-                                                            <TooltipProvider>
-                                                                <div className="flex min-h-10 items-center justify-center gap-1">
-                                                                    <Tooltip>
-                                                                        <TooltipTrigger
-                                                                            asChild
+                                                            <StatusToggle
+                                                                ariaLabel={`Alternar status de ${contractor.name}`}
+                                                                checked={contractor.active}
+                                                                disabled={updatingContractorId === contractor.id}
+                                                                onPressedChange={() => handleStatusToggle(contractor)}
+                                                            />
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 align-middle">
+                                                        <TooltipProvider>
+                                                            <div className="flex min-h-10 items-center justify-center gap-1">
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="bg-muted/40 hover:bg-muted"
+                                                                            onClick={(event) => {
+                                                                                event.stopPropagation();
+                                                                                handleEdit(contractor);
+                                                                            }}
                                                                         >
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                size="icon"
-                                                                                className="bg-muted/40 hover:bg-muted"
-                                                                                onClick={(
-                                                                                    event,
-                                                                                ) => {
-                                                                                    event.stopPropagation();
-                                                                                    handleEdit(
-                                                                                        contractor,
-                                                                                    );
-                                                                                }}
-                                                                            >
-                                                                                <Pencil />
-                                                                            </Button>
-                                                                        </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            Editar
-                                                                        </TooltipContent>
-                                                                    </Tooltip>
+                                                                            <Pencil />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>Editar</TooltipContent>
+                                                                </Tooltip>
 
-                                                                    <Dialog>
-                                                                        <Tooltip>
-                                                                            <TooltipTrigger
-                                                                                asChild
-                                                                            >
-                                                                                <DialogTrigger
-                                                                                    asChild
+                                                                <Dialog>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <DialogTrigger asChild>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive"
+                                                                                    onClick={(event) => event.stopPropagation()}
                                                                                 >
-                                                                                    <Button
-                                                                                        variant="ghost"
-                                                                                        size="icon"
-                                                                                        className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive"
-                                                                                        onClick={(
-                                                                                            event,
-                                                                                        ) =>
-                                                                                            event.stopPropagation()
-                                                                                        }
-                                                                                    >
-                                                                                        <Trash2 />
-                                                                                    </Button>
-                                                                                </DialogTrigger>
-                                                                            </TooltipTrigger>
-                                                                            <TooltipContent>
-                                                                                Excluir
-                                                                            </TooltipContent>
-                                                                        </Tooltip>
+                                                                                    <Trash2 />
+                                                                                </Button>
+                                                                            </DialogTrigger>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>Excluir</TooltipContent>
+                                                                    </Tooltip>
                                                                     <DialogContent>
                                                                         <DialogHeader>
-                                                                            <DialogTitle>
-                                                                                Excluir
-                                                                                contractor
-                                                                            </DialogTitle>
+                                                                            <DialogTitle>Excluir contractor</DialogTitle>
                                                                             <DialogDescription>
-                                                                                Essa
-                                                                                acao
-                                                                                remove{' '}
-                                                                                {
-                                                                                    contractor.name
-                                                                                }{' '}
-                                                                                permanentemente.
+                                                                                Essa ação remove {contractor.name} permanentemente.
                                                                             </DialogDescription>
                                                                         </DialogHeader>
                                                                         <DialogFooter>
-                                                                            <DialogClose
-                                                                                asChild
-                                                                            >
-                                                                                <Button variant="outline">
-                                                                                    Cancelar
-                                                                                </Button>
+                                                                            <DialogClose asChild>
+                                                                                <Button variant="outline">Cancelar</Button>
                                                                             </DialogClose>
                                                                             <Button
                                                                                 variant="destructive"
                                                                                 onClick={() => {
-                                                                                    router.delete(
-                                                                                        destroy(
-                                                                                            contractor.id,
-                                                                                        ),
-                                                                                        {
-                                                                                            preserveScroll: true,
-                                                                                        },
-                                                                                    );
+                                                                                    router.delete(destroy(contractor.id), {
+                                                                                        preserveScroll: true,
+                                                                                    });
                                                                                 }}
                                                                             >
                                                                                 Excluir
                                                                             </Button>
                                                                         </DialogFooter>
                                                                     </DialogContent>
-                                                                    </Dialog>
-                                                                </div>
-                                                            </TooltipProvider>
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )}
-                                        </tbody>
-                                    </table>
+                                                                </Dialog>
+                                                            </div>
+                                                        </TooltipProvider>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
                                 </div>
 
                                 <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                                     <p className="text-sm text-muted-foreground">
-                                        Pagina {contractors.current_page} de{' '}
-                                        {contractors.last_page}
+                                        Página {contractors.current_page} de {contractors.last_page}
                                     </p>
 
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={
-                                                contractors.prev_page_url ===
-                                                null
-                                            }
-                                            onClick={() => {
-                                                if (
-                                                    contractors.prev_page_url !==
-                                                    null
-                                                ) {
-                                                    router.visit(
-                                                        contractors.prev_page_url,
-                                                        {
-                                                            preserveScroll: true,
-                                                        },
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            Anterior
-                                        </Button>
-
-                                        {contractors.links
-                                            .filter((link) =>
-                                                /^\d+$/.test(link.label),
-                                            )
-                                            .map((link) => (
-                                                <Button
-                                                    key={link.label}
-                                                    variant={
-                                                        link.active
-                                                            ? 'default'
-                                                            : 'outline'
-                                                    }
-                                                    size="sm"
-                                                    disabled={link.url === null}
-                                                    onClick={() => {
-                                                        if (link.url !== null) {
-                                                            router.visit(
-                                                                link.url,
-                                                                {
-                                                                    preserveScroll: true,
-                                                                },
-                                                            );
+                                    <Pagination className="mx-0 w-auto">
+                                        <PaginationContent>
+                                            <PaginationItem>
+                                                <PaginationPrevious
+                                                    href={contractors.prev_page_url ?? '#'}
+                                                    aria-disabled={contractors.prev_page_url === null}
+                                                    className={contractors.prev_page_url === null ? 'pointer-events-none opacity-50' : ''}
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        if (contractors.prev_page_url !== null) {
+                                                            router.visit(contractors.prev_page_url, { preserveScroll: true });
                                                         }
                                                     }}
-                                                >
-                                                    {link.label}
-                                                </Button>
-                                            ))}
+                                                />
+                                            </PaginationItem>
 
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={
-                                                contractors.next_page_url ===
-                                                null
-                                            }
-                                            onClick={() => {
-                                                if (
-                                                    contractors.next_page_url !==
-                                                    null
-                                                ) {
-                                                    router.visit(
-                                                        contractors.next_page_url,
-                                                        {
-                                                            preserveScroll: true,
-                                                        },
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            Próxima
-                                        </Button>
-                                    </div>
+                                            {contractors.links
+                                                .filter((link) => /^\d+$/.test(link.label))
+                                                .map((link) => (
+                                                    <PaginationItem key={link.label}>
+                                                        <PaginationLink
+                                                            href={link.url ?? '#'}
+                                                            isActive={link.active}
+                                                            aria-disabled={link.url === null}
+                                                            className={link.url === null ? 'pointer-events-none opacity-50' : ''}
+                                                            onClick={(event) => {
+                                                                event.preventDefault();
+                                                                if (link.url !== null) {
+                                                                    router.visit(link.url, { preserveScroll: true });
+                                                                }
+                                                            }}
+                                                        >
+                                                            {link.label}
+                                                        </PaginationLink>
+                                                    </PaginationItem>
+                                                ))}
+
+                                            <PaginationItem>
+                                                <PaginationNext
+                                                    href={contractors.next_page_url ?? '#'}
+                                                    aria-disabled={contractors.next_page_url === null}
+                                                    className={contractors.next_page_url === null ? 'pointer-events-none opacity-50' : ''}
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        if (contractors.next_page_url !== null) {
+                                                            router.visit(contractors.next_page_url, { preserveScroll: true });
+                                                        }
+                                                    }}
+                                                />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
                                 </div>
                             </>
                         )}
