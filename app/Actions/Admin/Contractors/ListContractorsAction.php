@@ -11,8 +11,8 @@ class ListContractorsAction
         public ContractorRepository $contractorRepository,
     ) {}
 
-    public function handle(): LengthAwarePaginator
+    public function handle(array $filters): LengthAwarePaginator
     {
-        return $this->contractorRepository->paginate();
+        return $this->contractorRepository->paginate($filters);
     }
 }

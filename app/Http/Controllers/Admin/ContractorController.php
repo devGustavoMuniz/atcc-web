@@ -18,7 +18,7 @@ class ContractorController extends Controller
 
     public function index(ContractorIndexRequest $request): Response
     {
-        return $this->contractorService->index();
+        return $this->contractorService->index($request->validated());
     }
 
     public function store(ContractorStoreRequest $request): RedirectResponse

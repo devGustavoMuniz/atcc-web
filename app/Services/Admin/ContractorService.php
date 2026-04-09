@@ -19,9 +19,17 @@ class ContractorService
         public DeleteContractorAction $deleteContractorAction,
     ) {}
 
-    public function index(): Response
+    public function index(array $filters): Response
     {
-        $contractors = $this->listContractorsAction->handle()->through(
+        $normalizedFilters = [
+            'search_name' => $filters['search_name'] ?? null,
+            'search_cnpj' => $filters['search_cnpj'] ?? null,
+            'status' => $filters['status'] ?? null,
+            'sort' => $filters['sort'] ?? 'name',
+            'direction' => $filters['direction'] ?? 'asc',
+        ];
+
+        $contractors = $this->listContractorsAction->handle($normalizedFilters)->through(
             fn (Contractor $contractor): array => [
                 'id' => $contractor->id,
                 'name' => $contractor->name,
@@ -32,6 +40,7 @@ class ContractorService
 
         return Inertia::render('Admin/Contractors/Index', [
             'contractors' => $contractors,
+            'filters' => $normalizedFilters,
         ]);
     }
 

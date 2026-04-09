@@ -17,7 +17,74 @@ test('admin can access contractor index', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Contractors/Index')
             ->has('contractors.data', 2)
-            ->where('contractors.current_page', 1),
+            ->where('contractors.current_page', 1)
+            ->where('filters.search_name', null)
+            ->where('filters.search_cnpj', null)
+            ->where('filters.status', null)
+            ->where('filters.sort', 'name')
+            ->where('filters.direction', 'asc'),
+        );
+});
+
+test('admin can filter contractors index by name cnpj and status', function () {
+    $admin = User::factory()->admin()->create();
+
+    Contractor::factory()->create([
+        'name' => 'Alpha Care',
+        'cnpj' => '12.345.678/0001-90',
+        'active' => true,
+    ]);
+
+    Contractor::factory()->create([
+        'name' => 'Beta Group',
+        'cnpj' => '98.765.432/0001-10',
+        'active' => false,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.contractors.index', [
+            'search_name' => 'Beta',
+            'search_cnpj' => '98.765',
+            'status' => '0',
+        ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Contractors/Index')
+            ->has('contractors.data', 1)
+            ->where('contractors.data.0.name', 'Beta Group')
+            ->where('filters.search_name', 'Beta')
+            ->where('filters.search_cnpj', '98.765')
+            ->where('filters.status', '0'),
+        );
+});
+
+test('admin can sort contractors index', function () {
+    $admin = User::factory()->admin()->create();
+
+    Contractor::factory()->create([
+        'name' => 'Alpha Care',
+        'cnpj' => '11.111.111/0001-11',
+        'active' => true,
+    ]);
+
+    Contractor::factory()->create([
+        'name' => 'Zulu Health',
+        'cnpj' => '99.999.999/0001-99',
+        'active' => false,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.contractors.index', [
+            'sort' => 'name',
+            'direction' => 'desc',
+        ]))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Contractors/Index')
+            ->where('contractors.data.0.name', 'Zulu Health')
+            ->where('contractors.data.1.name', 'Alpha Care')
+            ->where('filters.sort', 'name')
+            ->where('filters.direction', 'desc'),
         );
 });
 

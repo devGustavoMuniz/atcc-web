@@ -1,5 +1,13 @@
 import { Head, router } from '@inertiajs/react';
-import { Building2, FileText, Pencil, Plus } from 'lucide-react';
+import {
+    Building2,
+    ChevronDown,
+    ChevronUp,
+    ChevronsUpDown,
+    FileText,
+    Pencil,
+    Plus,
+} from 'lucide-react';
 import { useState } from 'react';
 import ContractorController from '@/actions/App/Http/Controllers/Admin/ContractorController';
 import ContractorForm from '@/components/contractors/contractor-form';
@@ -16,9 +24,31 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { destroy, index } from '@/routes/admin/contractors';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { StatusToggle } from '@/components/ui/status-toggle';
+import { useTableFilters } from '@/hooks/use-table-filters';
+import { destroy, index, update as updateContractor } from '@/routes/admin/contractors';
 
 type ContractorRow = {
     id: number;
@@ -42,6 +72,13 @@ type Props = {
         next_page_url: string | null;
         links: PaginationLink[];
     };
+    filters: {
+        search_name: string | null;
+        search_cnpj: string | null;
+        status: string | null;
+        sort: 'name' | 'cnpj' | 'active';
+        direction: 'asc' | 'desc';
+    };
 };
 
 type SheetMode = 'create' | 'view' | 'edit';
@@ -60,10 +97,43 @@ function formatCnpj(value: string | null): string {
     return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
 }
 
-export default function ContractorsIndex({ contractors }: Props) {
+function getSortIcon(
+    column: 'name' | 'cnpj' | 'active',
+    sort: string,
+    direction: string,
+) {
+    if (sort !== column) {
+        return <ChevronsUpDown className="size-4 text-muted-foreground" />;
+    }
+
+    if (direction === 'asc') {
+        return <ChevronUp className="size-4" />;
+    }
+
+    return <ChevronDown className="size-4" />;
+}
+
+export default function ContractorsIndex({
+    contractors,
+    filters: initialFilters,
+}: Props) {
     const [sheetOpen, setSheetOpen] = useState(false);
     const [sheetMode, setSheetMode] = useState<SheetMode>('create');
-    const [selectedContractor, setSelectedContractor] = useState<ContractorRow | null>(null);
+    const [updatingContractorId, setUpdatingContractorId] = useState<
+        number | null
+    >(null);
+    const [selectedContractor, setSelectedContractor] =
+        useState<ContractorRow | null>(null);
+    const { filters, handleFilterChange, handleSortChange } = useTableFilters({
+        initialFilters: {
+            search_name: initialFilters.search_name ?? '',
+            search_cnpj: initialFilters.search_cnpj ?? '',
+            status: initialFilters.status ?? '',
+            sort: initialFilters.sort,
+            direction: initialFilters.direction,
+        },
+        url: index.url(),
+    });
 
     const formContractor = selectedContractor ?? {
         name: '',
@@ -89,6 +159,27 @@ export default function ContractorsIndex({ contractors }: Props) {
         setSheetOpen(true);
     };
 
+    const handleStatusToggle = (contractor: ContractorRow) => {
+        setUpdatingContractorId(contractor.id);
+
+        router.patch(
+            updateContractor(contractor.id),
+            {
+                name: contractor.name,
+                cnpj: contractor.cnpj ?? '',
+                active: !contractor.active,
+            },
+            {
+                only: ['contractors', 'filters'],
+                preserveScroll: true,
+                preserveState: true,
+                onFinish: () => {
+                    setUpdatingContractorId(null);
+                },
+            },
+        );
+    };
+
     return (
         <>
             <Head title="Contractors" />
@@ -110,7 +201,8 @@ export default function ContractorsIndex({ contractors }: Props) {
                     <CardHeader>
                         <CardTitle>Listagem</CardTitle>
                         <CardDescription>
-                            {contractors.data.length} contractor(s) na pagina atual.
+                            {contractors.data.length} contractor(s) na pagina
+                            atual.
                         </CardDescription>
                     </CardHeader>
 
@@ -120,9 +212,12 @@ export default function ContractorsIndex({ contractors }: Props) {
                                 <div className="mb-4 rounded-full border border-border/80 bg-background p-3 shadow-sm">
                                     <Building2 className="size-6 text-muted-foreground" />
                                 </div>
-                                <h3 className="text-lg font-semibold">Nenhum contractor cadastrado</h3>
+                                <h3 className="text-lg font-semibold">
+                                    Nenhum contractor cadastrado
+                                </h3>
                                 <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                                    Crie a primeira contratante para comecar a organizar os vinculos administrativos.
+                                    Crie a primeira contratante para comecar a
+                                    organizar os vinculos administrativos.
                                 </p>
                                 <Button className="mt-6" onClick={handleCreate}>
                                     <Plus />
@@ -132,112 +227,309 @@ export default function ContractorsIndex({ contractors }: Props) {
                         ) : (
                             <>
                                 <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[640px] text-left text-sm">
+                                    <table className="w-full min-w-[640px] text-sm">
                                         <thead className="border-b text-muted-foreground">
                                             <tr>
-                                                <th className="pb-3 align-middle font-medium">Nome</th>
-                                                <th className="pb-3 align-middle font-medium">CNPJ</th>
-                                                <th className="pb-3 align-middle font-medium">Status</th>
-                                                <th className="pb-3 text-right align-middle font-medium">Acoes</th>
+                                                <th className="pb-3 align-top font-medium">
+                                                    <div className="space-y-3 pr-4">
+                                                        <button
+                                                            type="button"
+                                                            className={`flex items-center gap-2 transition-colors ${
+                                                                filters.sort ===
+                                                                'name'
+                                                                    ? 'text-foreground'
+                                                                    : 'hover:text-foreground'
+                                                            }`}
+                                                            onClick={() =>
+                                                                handleSortChange(
+                                                                    'name',
+                                                                )
+                                                            }
+                                                        >
+                                                            <span>Nome</span>
+                                                            {getSortIcon(
+                                                                'name',
+                                                                filters.sort,
+                                                                filters.direction,
+                                                            )}
+                                                        </button>
+                                                        <Input
+                                                            value={
+                                                                filters.search_name
+                                                            }
+                                                            onChange={(event) =>
+                                                                handleFilterChange(
+                                                                    'search_name',
+                                                                    event.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder="Buscar por nome"
+                                                        />
+                                                    </div>
+                                                </th>
+                                                <th className="pb-3 align-top font-medium">
+                                                    <div className="space-y-3 pr-4">
+                                                        <button
+                                                            type="button"
+                                                            className={`flex items-center gap-2 transition-colors ${
+                                                                filters.sort ===
+                                                                'cnpj'
+                                                                    ? 'text-foreground'
+                                                                    : 'hover:text-foreground'
+                                                            }`}
+                                                            onClick={() =>
+                                                                handleSortChange(
+                                                                    'cnpj',
+                                                                )
+                                                            }
+                                                        >
+                                                            <span>CNPJ</span>
+                                                            {getSortIcon(
+                                                                'cnpj',
+                                                                filters.sort,
+                                                                filters.direction,
+                                                            )}
+                                                        </button>
+                                                        <Input
+                                                            value={
+                                                                filters.search_cnpj
+                                                            }
+                                                            onChange={(event) =>
+                                                                handleFilterChange(
+                                                                    'search_cnpj',
+                                                                    event.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder="Buscar por CNPJ"
+                                                        />
+                                                    </div>
+                                                </th>
+                                                <th className="pb-3 align-top font-medium">
+                                                    <div className="space-y-3 pr-4">
+                                                        <button
+                                                            type="button"
+                                                            className={`flex items-center gap-2 transition-colors ${
+                                                                filters.sort ===
+                                                                'active'
+                                                                    ? 'text-foreground'
+                                                                    : 'hover:text-foreground'
+                                                            }`}
+                                                            onClick={() =>
+                                                                handleSortChange(
+                                                                    'active',
+                                                                )
+                                                            }
+                                                        >
+                                                            <span>Status</span>
+                                                            {getSortIcon(
+                                                                'active',
+                                                                filters.sort,
+                                                                filters.direction,
+                                                            )}
+                                                        </button>
+                                                        <Select
+                                                            value={
+                                                                filters.status ===
+                                                                ''
+                                                                    ? 'all'
+                                                                    : filters.status
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) =>
+                                                                handleFilterChange(
+                                                                    'status',
+                                                                    value ===
+                                                                        'all'
+                                                                        ? ''
+                                                                        : value,
+                                                                )
+                                                            }
+                                                        >
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue placeholder="Todos" />
+                                                            </SelectTrigger>
+                                                            <SelectContent align="start">
+                                                                <SelectItem value="all">
+                                                                    Todos
+                                                                </SelectItem>
+                                                                <SelectItem value="1">
+                                                                    Ativo
+                                                                </SelectItem>
+                                                                <SelectItem value="0">
+                                                                    Inativo
+                                                                </SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </th>
+                                                <th className="pb-3 text-center align-middle font-medium">
+                                                    Acoes
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {contractors.data.map((contractor) => (
-                                                <tr
-                                                    key={contractor.id}
-                                                    className="cursor-pointer border-b transition-colors hover:bg-muted/30 last:border-b-0"
-                                                    onClick={() => handleView(contractor)}
-                                                >
-                                                    <td className="py-4 align-middle">
-                                                        <div className="flex min-h-10 items-center font-medium">
-                                                            {contractor.name}
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-4 align-middle text-muted-foreground">
-                                                        <div className="flex min-h-10 items-center">
-                                                            {formatCnpj(contractor.cnpj)}
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-4 align-middle">
-                                                        <div className="flex min-h-10 items-center">
-                                                            <Badge variant={contractor.active ? 'default' : 'outline'}>
-                                                                {contractor.active ? 'Ativo' : 'Inativo'}
-                                                            </Badge>
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-4 align-middle">
-                                                        <div className="flex min-h-10 items-center justify-end gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={(event) => {
-                                                                    event.stopPropagation();
-                                                                    handleEdit(contractor);
-                                                                }}
+                                            {contractors.data.map(
+                                                (contractor) => (
+                                                    <tr
+                                                        key={contractor.id}
+                                                        className="cursor-pointer border-b transition-colors odd:bg-muted/[0.16] even:bg-background hover:bg-muted/30 last:border-b-0"
+                                                        onClick={() =>
+                                                            handleView(
+                                                                contractor,
+                                                            )
+                                                        }
+                                                    >
+                                                        <td className="py-4 align-middle">
+                                                            <div className="flex min-h-10 items-center justify-center text-center font-medium">
+                                                                {
+                                                                    contractor.name
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-4 align-middle text-muted-foreground">
+                                                            <div className="flex min-h-10 items-center justify-center text-center">
+                                                                {formatCnpj(
+                                                                    contractor.cnpj,
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-4 align-middle">
+                                                            <div
+                                                                className="flex min-h-10 items-center justify-center"
+                                                                onClick={(
+                                                                    event,
+                                                                ) =>
+                                                                    event.stopPropagation()
+                                                                }
                                                             >
-                                                                Editar
-                                                            </Button>
-                                                            <Dialog>
-                                                                <DialogTrigger asChild>
-                                                                    <Button
-                                                                        variant="destructive"
-                                                                        size="sm"
-                                                                        onClick={(event) => event.stopPropagation()}
+                                                                <StatusToggle
+                                                                    ariaLabel={`Alternar status de ${contractor.name}`}
+                                                                    checked={
+                                                                        contractor.active
+                                                                    }
+                                                                    disabled={
+                                                                        updatingContractorId ===
+                                                                        contractor.id
+                                                                    }
+                                                                    onPressedChange={() =>
+                                                                        handleStatusToggle(
+                                                                            contractor,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-4 align-middle">
+                                                            <div className="flex min-h-10 items-center justify-center gap-2">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={(
+                                                                        event,
+                                                                    ) => {
+                                                                        event.stopPropagation();
+                                                                        handleEdit(
+                                                                            contractor,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    Editar
+                                                                </Button>
+                                                                <Dialog>
+                                                                    <DialogTrigger
+                                                                        asChild
                                                                     >
-                                                                        Excluir
-                                                                    </Button>
-                                                                </DialogTrigger>
-                                                                <DialogContent>
-                                                                    <DialogHeader>
-                                                                        <DialogTitle>
-                                                                            Excluir contractor
-                                                                        </DialogTitle>
-                                                                        <DialogDescription>
-                                                                            Essa acao remove {contractor.name} permanentemente.
-                                                                        </DialogDescription>
-                                                                    </DialogHeader>
-                                                                    <DialogFooter>
-                                                                        <DialogClose asChild>
-                                                                            <Button variant="outline">
-                                                                                Cancelar
-                                                                            </Button>
-                                                                        </DialogClose>
                                                                         <Button
                                                                             variant="destructive"
-                                                                            onClick={() => {
-                                                                                router.delete(destroy(contractor.id), {
-                                                                                    preserveScroll: true,
-                                                                                });
-                                                                            }}
+                                                                            size="sm"
+                                                                            onClick={(
+                                                                                event,
+                                                                            ) =>
+                                                                                event.stopPropagation()
+                                                                            }
                                                                         >
                                                                             Excluir
                                                                         </Button>
-                                                                    </DialogFooter>
-                                                                </DialogContent>
-                                                            </Dialog>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                                    </DialogTrigger>
+                                                                    <DialogContent>
+                                                                        <DialogHeader>
+                                                                            <DialogTitle>
+                                                                                Excluir
+                                                                                contractor
+                                                                            </DialogTitle>
+                                                                            <DialogDescription>
+                                                                                Essa
+                                                                                acao
+                                                                                remove{' '}
+                                                                                {
+                                                                                    contractor.name
+                                                                                }{' '}
+                                                                                permanentemente.
+                                                                            </DialogDescription>
+                                                                        </DialogHeader>
+                                                                        <DialogFooter>
+                                                                            <DialogClose
+                                                                                asChild
+                                                                            >
+                                                                                <Button variant="outline">
+                                                                                    Cancelar
+                                                                                </Button>
+                                                                            </DialogClose>
+                                                                            <Button
+                                                                                variant="destructive"
+                                                                                onClick={() => {
+                                                                                    router.delete(
+                                                                                        destroy(
+                                                                                            contractor.id,
+                                                                                        ),
+                                                                                        {
+                                                                                            preserveScroll: true,
+                                                                                        },
+                                                                                    );
+                                                                                }}
+                                                                            >
+                                                                                Excluir
+                                                                            </Button>
+                                                                        </DialogFooter>
+                                                                    </DialogContent>
+                                                                </Dialog>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
 
                                 <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                                     <p className="text-sm text-muted-foreground">
-                                        Pagina {contractors.current_page} de {contractors.last_page}
+                                        Pagina {contractors.current_page} de{' '}
+                                        {contractors.last_page}
                                     </p>
 
                                     <div className="flex items-center gap-2">
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            disabled={contractors.prev_page_url === null}
+                                            disabled={
+                                                contractors.prev_page_url ===
+                                                null
+                                            }
                                             onClick={() => {
-                                                if (contractors.prev_page_url !== null) {
-                                                    router.visit(contractors.prev_page_url, {
-                                                        preserveScroll: true,
-                                                    });
+                                                if (
+                                                    contractors.prev_page_url !==
+                                                    null
+                                                ) {
+                                                    router.visit(
+                                                        contractors.prev_page_url,
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
                                                 }
                                             }}
                                         >
@@ -245,18 +537,27 @@ export default function ContractorsIndex({ contractors }: Props) {
                                         </Button>
 
                                         {contractors.links
-                                            .filter((link) => /^\d+$/.test(link.label))
+                                            .filter((link) =>
+                                                /^\d+$/.test(link.label),
+                                            )
                                             .map((link) => (
                                                 <Button
                                                     key={link.label}
-                                                    variant={link.active ? 'default' : 'outline'}
+                                                    variant={
+                                                        link.active
+                                                            ? 'default'
+                                                            : 'outline'
+                                                    }
                                                     size="sm"
                                                     disabled={link.url === null}
                                                     onClick={() => {
                                                         if (link.url !== null) {
-                                                            router.visit(link.url, {
-                                                                preserveScroll: true,
-                                                            });
+                                                            router.visit(
+                                                                link.url,
+                                                                {
+                                                                    preserveScroll: true,
+                                                                },
+                                                            );
                                                         }
                                                     }}
                                                 >
@@ -267,12 +568,21 @@ export default function ContractorsIndex({ contractors }: Props) {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            disabled={contractors.next_page_url === null}
+                                            disabled={
+                                                contractors.next_page_url ===
+                                                null
+                                            }
                                             onClick={() => {
-                                                if (contractors.next_page_url !== null) {
-                                                    router.visit(contractors.next_page_url, {
-                                                        preserveScroll: true,
-                                                    });
+                                                if (
+                                                    contractors.next_page_url !==
+                                                    null
+                                                ) {
+                                                    router.visit(
+                                                        contractors.next_page_url,
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
                                                 }
                                             }}
                                         >
@@ -323,7 +633,9 @@ export default function ContractorsIndex({ contractors }: Props) {
                                             <FileText className="size-4 text-muted-foreground" />
                                         </div>
                                         <div>
-                                            <p className="font-medium">{selectedContractor.name}</p>
+                                            <p className="font-medium">
+                                                {selectedContractor.name}
+                                            </p>
                                             <p className="text-sm text-muted-foreground">
                                                 Contractor administrativo
                                             </p>
@@ -332,18 +644,38 @@ export default function ContractorsIndex({ contractors }: Props) {
 
                                     <dl className="grid gap-4 sm:grid-cols-2">
                                         <div className="space-y-1">
-                                            <dt className="text-sm font-medium text-muted-foreground">Nome</dt>
-                                            <dd className="text-sm font-medium">{selectedContractor.name}</dd>
+                                            <dt className="text-sm font-medium text-muted-foreground">
+                                                Nome
+                                            </dt>
+                                            <dd className="text-sm font-medium">
+                                                {selectedContractor.name}
+                                            </dd>
                                         </div>
                                         <div className="space-y-1">
-                                            <dt className="text-sm font-medium text-muted-foreground">CNPJ</dt>
-                                            <dd className="text-sm font-medium">{formatCnpj(selectedContractor.cnpj)}</dd>
+                                            <dt className="text-sm font-medium text-muted-foreground">
+                                                CNPJ
+                                            </dt>
+                                            <dd className="text-sm font-medium">
+                                                {formatCnpj(
+                                                    selectedContractor.cnpj,
+                                                )}
+                                            </dd>
                                         </div>
                                         <div className="space-y-1">
-                                            <dt className="text-sm font-medium text-muted-foreground">Status</dt>
+                                            <dt className="text-sm font-medium text-muted-foreground">
+                                                Status
+                                            </dt>
                                             <dd>
-                                                <Badge variant={selectedContractor.active ? 'default' : 'outline'}>
-                                                    {selectedContractor.active ? 'Ativo' : 'Inativo'}
+                                                <Badge
+                                                    variant={
+                                                        selectedContractor.active
+                                                            ? 'default'
+                                                            : 'outline'
+                                                    }
+                                                >
+                                                    {selectedContractor.active
+                                                        ? 'Ativo'
+                                                        : 'Inativo'}
                                                 </Badge>
                                             </dd>
                                         </div>
@@ -352,7 +684,11 @@ export default function ContractorsIndex({ contractors }: Props) {
                             </div>
 
                             <div className="border-t px-6 py-4">
-                                <Button onClick={() => handleEdit(selectedContractor)}>
+                                <Button
+                                    onClick={() =>
+                                        handleEdit(selectedContractor)
+                                    }
+                                >
                                     <Pencil />
                                     Editar contractor
                                 </Button>
@@ -362,12 +698,19 @@ export default function ContractorsIndex({ contractors }: Props) {
                         <ContractorForm
                             key={`${sheetMode}-${selectedContractor?.id ?? 'new'}`}
                             action={
-                                sheetMode === 'create' || selectedContractor === null
+                                sheetMode === 'create' ||
+                                selectedContractor === null
                                     ? ContractorController.store()
-                                    : ContractorController.update(selectedContractor.id)
+                                    : ContractorController.update(
+                                          selectedContractor.id,
+                                      )
                             }
                             contractor={formContractor}
-                            submitLabel={sheetMode === 'create' ? 'Criar contractor' : 'Salvar alteracoes'}
+                            submitLabel={
+                                sheetMode === 'create'
+                                    ? 'Criar contractor'
+                                    : 'Salvar alteracoes'
+                            }
                             onSuccess={() => {
                                 setSheetOpen(false);
                                 setSelectedContractor(null);
