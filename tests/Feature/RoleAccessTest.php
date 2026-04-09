@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
@@ -10,7 +11,11 @@ test('admin authenticated user can access admin dashboard and not manager dashbo
 
     $this->actingAs($admin)
         ->get(route('admin.dashboard'))
-        ->assertSuccessful();
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/Dashboard')
+            ->etc(),
+        );
 
     $this->actingAs($admin)
         ->get(route('manager.dashboard'))
@@ -22,7 +27,11 @@ test('gestor authenticated user can access manager dashboard and not admin dashb
 
     $this->actingAs($gestor)
         ->get(route('manager.dashboard'))
-        ->assertSuccessful();
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('manager/Dashboard')
+            ->etc(),
+        );
 
     $this->actingAs($gestor)
         ->get(route('admin.dashboard'))

@@ -17,7 +17,7 @@ class ManagerDashboardController extends Controller
     public function __invoke(ManagerDashboardIndexRequest $request): Response
     {
         return Inertia::render(
-            'Manager/Dashboard',
+            'manager/Dashboard',
             $this->managerDashboardService->getProps($request->user()),
         );
     }

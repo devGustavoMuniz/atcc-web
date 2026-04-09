@@ -17,7 +17,7 @@ class AdminDashboardController extends Controller
     public function __invoke(AdminDashboardIndexRequest $request): Response
     {
         return Inertia::render(
-            'Admin/Dashboard',
+            'admin/Dashboard',
             $this->adminDashboardService->getProps($request->user()),
         );
     }

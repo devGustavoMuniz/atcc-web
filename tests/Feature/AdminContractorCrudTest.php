@@ -15,7 +15,7 @@ test('admin can access contractor index', function () {
         ->get(route('admin.contractors.index'))
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Contractors/Index')
+            ->component('admin/Contractors/Index')
             ->has('contractors.data', 2)
             ->where('contractors.current_page', 1)
             ->where('filters.search_name', null)
@@ -49,7 +49,7 @@ test('admin can filter contractors index by name cnpj and status', function () {
         ]))
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Contractors/Index')
+            ->component('admin/Contractors/Index')
             ->has('contractors.data', 1)
             ->where('contractors.data.0.name', 'Beta Group')
             ->where('filters.search_name', 'Beta')
@@ -80,7 +80,7 @@ test('admin can sort contractors index', function () {
         ]))
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Contractors/Index')
+            ->component('admin/Contractors/Index')
             ->where('contractors.data.0.name', 'Zulu Health')
             ->where('contractors.data.1.name', 'Alpha Care')
             ->where('filters.sort', 'name')

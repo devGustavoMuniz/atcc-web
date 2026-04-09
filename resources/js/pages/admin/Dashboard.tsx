@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { dashboard as adminDashboard } from '@/routes/admin';
 
 type DashboardProps = {
     user: {
@@ -23,3 +24,12 @@ export default function Dashboard({ user }: DashboardProps) {
         </>
     );
 }
+
+Dashboard.layout = {
+    breadcrumbs: [
+        {
+            title: 'Dashboard',
+            href: adminDashboard(),
+        },
+    ],
+};

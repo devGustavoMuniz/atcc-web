@@ -38,7 +38,7 @@ class ContractorService
             ],
         );
 
-        return Inertia::render('Admin/Contractors/Index', [
+        return Inertia::render('admin/Contractors/Index', [
             'contractors' => $contractors,
             'filters' => $normalizedFilters,
         ]);
