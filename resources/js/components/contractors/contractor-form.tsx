@@ -5,28 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-function formatCnpj(value: string): string {
-    const digits = value.replace(/\D/g, '').slice(0, 14);
-
-    if (digits.length <= 2) {
-        return digits;
-    }
-
-    if (digits.length <= 5) {
-        return `${digits.slice(0, 2)}.${digits.slice(2)}`;
-    }
-
-    if (digits.length <= 8) {
-        return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
-    }
-
-    if (digits.length <= 12) {
-        return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
-    }
-
-    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
-}
+import { formatCnpjMask } from '@/lib/formatters';
 
 type ContractorFormProps = {
     action: any;
@@ -55,13 +34,13 @@ export default function ContractorForm({
     useEffect(() => {
         form.setData({
             name: contractor.name,
-            cnpj: formatCnpj(contractor.cnpj ?? ''),
+            cnpj: formatCnpjMask(contractor.cnpj ?? ''),
             active: contractor.active,
         });
         form.clearErrors();
         form.setDefaults({
             name: contractor.name,
-            cnpj: formatCnpj(contractor.cnpj ?? ''),
+            cnpj: formatCnpjMask(contractor.cnpj ?? ''),
             active: contractor.active,
         });
     }, [contractor]);
@@ -86,7 +65,9 @@ export default function ContractorForm({
                     <Input
                         id="name"
                         value={form.data.name}
-                        onChange={(event) => form.setData('name', event.target.value)}
+                        onChange={(event) =>
+                            form.setData('name', event.target.value)
+                        }
                         placeholder="Nome da contratante"
                     />
                     <InputError message={form.errors.name} />
@@ -97,7 +78,12 @@ export default function ContractorForm({
                     <Input
                         id="cnpj"
                         value={form.data.cnpj}
-                        onChange={(event) => form.setData('cnpj', formatCnpj(event.target.value))}
+                        onChange={(event) =>
+                            form.setData(
+                                'cnpj',
+                                formatCnpjMask(event.target.value),
+                            )
+                        }
                         placeholder="00.000.000/0000-00"
                     />
                     <InputError message={form.errors.cnpj} />
@@ -107,13 +93,16 @@ export default function ContractorForm({
                     <Checkbox
                         id="active"
                         checked={form.data.active}
-                        onCheckedChange={(checked) => form.setData('active', checked === true)}
+                        onCheckedChange={(checked) =>
+                            form.setData('active', checked === true)
+                        }
                     />
 
                     <div className="grid gap-1">
                         <Label htmlFor="active">Contractor ativo</Label>
                         <p className="text-sm text-muted-foreground">
-                            Contractors inativos permanecem cadastrados, mas ficam sinalizados na listagem.
+                            Contractors inativos permanecem cadastrados, mas
+                            ficam sinalizados na listagem.
                         </p>
                     </div>
                 </div>

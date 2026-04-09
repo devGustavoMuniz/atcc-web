@@ -1,84 +1,160 @@
 import { router } from '@inertiajs/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-type TableFilters = {
-    search_name: string;
-    search_cnpj: string;
-    status: string;
-    sort: 'name' | 'cnpj' | 'active';
-    direction: 'asc' | 'desc';
-};
-
-type UseTableFiltersOptions = {
-    initialFilters: Partial<TableFilters>;
+type UseTableFiltersOptions<TFilters extends Record<string, string>> = {
+    initialFilters: TFilters;
     url: string;
+    debounceFields?: Array<keyof TFilters>;
 };
 
-function normalizeFilters(filters: Partial<TableFilters>): TableFilters {
-    return {
-        search_name: filters.search_name ?? '',
-        search_cnpj: filters.search_cnpj ?? '',
-        status: filters.status ?? '',
-        sort: filters.sort ?? 'name',
-        direction: filters.direction ?? 'asc',
-    };
+type TableFilterState<TFilters extends Record<string, string>> = {
+    sourceKey: string;
+    filters: TFilters;
+    debouncedFilters: Partial<TFilters>;
+};
+
+function normalizeFilters<TFilters extends Record<string, string>>(
+    filters: TFilters,
+): TFilters {
+    return { ...filters };
 }
 
-function buildQuery(filters: TableFilters): Record<string, string> {
+function buildQuery<TFilters extends Record<string, string>>(
+    filters: TFilters,
+): Record<string, string> {
     return Object.fromEntries(
         Object.entries(filters).filter(([, value]) => value !== ''),
     ) as Record<string, string>;
 }
 
-function buildFilterKey(filters: TableFilters): string {
+function buildFilterKey<TFilters extends Record<string, string>>(
+    filters: TFilters,
+): string {
     return JSON.stringify(filters);
 }
 
-export function useTableFilters({
+function getDefaultDebounceFields<TFilters extends Record<string, string>>(
+    filters: TFilters,
+): Array<keyof TFilters> {
+    return Object.keys(filters).filter((field) =>
+        field.startsWith('search_'),
+    ) as Array<keyof TFilters>;
+}
+
+function getDebouncedValues<TFilters extends Record<string, string>>(
+    filters: TFilters,
+    debounceFields: Array<keyof TFilters>,
+): Partial<TFilters> {
+    return Object.fromEntries(
+        debounceFields.map((field) => [field, filters[field]]),
+    ) as Partial<TFilters>;
+}
+
+function createTableFilterState<TFilters extends Record<string, string>>(
+    filters: TFilters,
+    debounceFields: Array<keyof TFilters>,
+): TableFilterState<TFilters> {
+    return {
+        sourceKey: buildFilterKey(filters),
+        filters,
+        debouncedFilters: getDebouncedValues(filters, debounceFields),
+    };
+}
+
+export function useTableFilters<TFilters extends Record<string, string>>({
     initialFilters,
     url,
-}: UseTableFiltersOptions) {
-    const [filters, setFilters] = useState<TableFilters>(() => normalizeFilters(initialFilters));
-    const [debouncedSearchName, setDebouncedSearchName] = useState(filters.search_name);
-    const [debouncedSearchCnpj, setDebouncedSearchCnpj] = useState(filters.search_cnpj);
+    debounceFields,
+}: UseTableFiltersOptions<TFilters>) {
+    const initialFiltersKey = JSON.stringify(initialFilters);
+    const normalizedInitialFilters = useMemo(
+        () => normalizeFilters(initialFilters),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [initialFiltersKey],
+    );
+    const debounceFieldKey = JSON.stringify(debounceFields ?? []);
+    const resolvedDebounceFields = useMemo(
+        () =>
+            debounceFields ?? getDefaultDebounceFields(normalizedInitialFilters),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [debounceFieldKey, normalizedInitialFilters],
+    );
+    const serverFilterKey = buildFilterKey(normalizedInitialFilters);
+    const [tableFilterState, setTableFilterState] =
+        useState<TableFilterState<TFilters>>(() =>
+            createTableFilterState(
+                normalizedInitialFilters,
+                resolvedDebounceFields,
+            ),
+        );
+    const currentState = useMemo(
+        () =>
+            tableFilterState.sourceKey === serverFilterKey
+                ? tableFilterState
+                : createTableFilterState(
+                      normalizedInitialFilters,
+                      resolvedDebounceFields,
+                  ),
+        [
+            normalizedInitialFilters,
+            resolvedDebounceFields,
+            serverFilterKey,
+            tableFilterState,
+        ],
+    );
+    const filters = currentState.filters;
+    const debouncedFilters = currentState.debouncedFilters;
     const isFirstRender = useRef(true);
-    const serverFilterKey = buildFilterKey(normalizeFilters(initialFilters));
 
     useEffect(() => {
-        const nextFilters = normalizeFilters(initialFilters);
+        const timeouts = resolvedDebounceFields.map((field) =>
+            window.setTimeout(() => {
+                setTableFilterState((currentTableFilterState) => {
+                    const nextState =
+                        currentTableFilterState.sourceKey === serverFilterKey
+                            ? currentTableFilterState
+                            : createTableFilterState(
+                                  normalizedInitialFilters,
+                                  resolvedDebounceFields,
+                              );
 
-        setFilters(nextFilters);
-        setDebouncedSearchName(nextFilters.search_name);
-        setDebouncedSearchCnpj(nextFilters.search_cnpj);
+                    if (
+                        nextState.debouncedFilters[field] ===
+                        nextState.filters[field]
+                    ) {
+                        return nextState;
+                    }
+
+                    return {
+                        ...nextState,
+                        debouncedFilters: {
+                            ...nextState.debouncedFilters,
+                            [field]: nextState.filters[field],
+                        },
+                    };
+                });
+            }, 300),
+        );
+
+        return () => {
+            timeouts.forEach((timeout) => window.clearTimeout(timeout));
+        };
     }, [
-        initialFilters.direction,
-        initialFilters.search_cnpj,
-        initialFilters.search_name,
-        initialFilters.sort,
-        initialFilters.status,
+        debounceFieldKey,
+        filters,
+        normalizedInitialFilters,
+        resolvedDebounceFields,
+        serverFilterKey,
     ]);
 
-    useEffect(() => {
-        const timeout = window.setTimeout(() => {
-            setDebouncedSearchName(filters.search_name);
-        }, 300);
-
-        return () => window.clearTimeout(timeout);
-    }, [filters.search_name]);
-
-    useEffect(() => {
-        const timeout = window.setTimeout(() => {
-            setDebouncedSearchCnpj(filters.search_cnpj);
-        }, 300);
-
-        return () => window.clearTimeout(timeout);
-    }, [filters.search_cnpj]);
-
-    const appliedFilters = useMemo<TableFilters>(() => ({
-        ...filters,
-        search_name: debouncedSearchName,
-        search_cnpj: debouncedSearchCnpj,
-    }), [debouncedSearchCnpj, debouncedSearchName, filters]);
+    const appliedFilters = useMemo<TFilters>(
+        () =>
+            ({
+                ...filters,
+                ...debouncedFilters,
+            }) as TFilters,
+        [debouncedFilters, filters],
+    );
 
     useEffect(() => {
         if (isFirstRender.current) {
@@ -98,22 +174,49 @@ export function useTableFilters({
         });
     }, [appliedFilters, serverFilterKey, url]);
 
-    const handleFilterChange = (key: keyof TableFilters, value: string): void => {
-        setFilters((currentFilters) => ({
-            ...currentFilters,
-            [key]: value,
-        }));
+    const handleFilterChange = (key: keyof TFilters, value: string): void => {
+        setTableFilterState((currentTableFilterState) => {
+            const nextState =
+                currentTableFilterState.sourceKey === serverFilterKey
+                    ? currentTableFilterState
+                    : createTableFilterState(
+                          normalizedInitialFilters,
+                          resolvedDebounceFields,
+                      );
+
+            return {
+                ...nextState,
+                filters: {
+                    ...nextState.filters,
+                    [key]: value,
+                } as TFilters,
+            };
+        });
     };
 
-    const handleSortChange = (column: TableFilters['sort']): void => {
-        setFilters((currentFilters) => ({
-            ...currentFilters,
-            sort: column,
-            direction:
-                currentFilters.sort === column && currentFilters.direction === 'asc'
-                    ? 'desc'
-                    : 'asc',
-        }));
+    const handleSortChange = (column: TFilters['sort']): void => {
+        setTableFilterState((currentTableFilterState) => {
+            const nextState =
+                currentTableFilterState.sourceKey === serverFilterKey
+                    ? currentTableFilterState
+                    : createTableFilterState(
+                          normalizedInitialFilters,
+                          resolvedDebounceFields,
+                      );
+
+            return {
+                ...nextState,
+                filters: {
+                    ...nextState.filters,
+                    sort: column,
+                    direction:
+                        nextState.filters.sort === column &&
+                        nextState.filters.direction === 'asc'
+                            ? 'desc'
+                            : 'asc',
+                } as TFilters,
+            };
+        });
     };
 
     return {
