@@ -141,3 +141,16 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer base {
+    button:not([disabled]),
+    [role='button']:not([disabled]),
+    [role='switch']:not([disabled]),
+    [role='checkbox']:not([disabled]),
+    [role='tab']:not([disabled]),
+    label[for],
+    summary,
+    select:not([disabled]) {
+        cursor: pointer;
+    }
+}

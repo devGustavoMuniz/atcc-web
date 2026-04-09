@@ -48,6 +48,8 @@ function PaginationLink({
   size = "icon",
   ...props
 }: PaginationLinkProps) {
+  const isAriaDisabled = props["aria-disabled"] === true || props["aria-disabled"] === "true"
+
   return (
     <a
       aria-current={isActive ? "page" : undefined}
@@ -58,6 +60,8 @@ function PaginationLink({
           variant: isActive ? "outline" : "ghost",
           size,
         }),
+        !isAriaDisabled && "cursor-pointer",
+        "aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
         className
       )}
       {...props}
