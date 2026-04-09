@@ -10,6 +10,11 @@ class PasswordUpdateRequest extends FormRequest
 {
     use PasswordValidationRules;
 
+    public function authorize(): bool
+    {
+        return true;
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

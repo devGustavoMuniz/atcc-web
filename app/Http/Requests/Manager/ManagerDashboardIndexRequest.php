@@ -1,15 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Settings;
+namespace App\Http\Requests\Manager;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Laravel\Fortify\InteractsWithTwoFactorState;
 
-class TwoFactorAuthenticationRequest extends FormRequest
+class ManagerDashboardIndexRequest extends FormRequest
 {
-    use InteractsWithTwoFactorState;
-
     public function authorize(): bool
     {
         return true;
