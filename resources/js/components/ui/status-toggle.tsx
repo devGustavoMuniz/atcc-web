@@ -34,11 +34,11 @@ export function StatusToggle({
     >
       <span
         className={cn(
-          "pointer-events-none absolute inset-y-0 flex items-center text-[11px] font-semibold uppercase tracking-[0.02em] transition-all",
+          "pointer-events-none absolute inset-y-0 flex items-center text-[11px] font-semibold tracking-[0.02em] transition-all",
           checked ? "left-3 pr-8" : "right-3 pl-8"
         )}
       >
-        {checked ? "Sim" : "Nao"}
+        {checked ? "Sim" : "Não"}
       </span>
       <span
         className={cn(

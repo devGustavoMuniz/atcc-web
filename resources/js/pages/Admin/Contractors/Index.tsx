@@ -7,6 +7,7 @@ import {
     FileText,
     Pencil,
     Plus,
+    Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 import ContractorController from '@/actions/App/Http/Controllers/Admin/ContractorController';
@@ -47,6 +48,12 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { StatusToggle } from '@/components/ui/status-toggle';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useTableFilters } from '@/hooks/use-table-filters';
 import { destroy, index, update as updateContractor } from '@/routes/admin/contractors';
 
@@ -201,7 +208,7 @@ export default function ContractorsIndex({
                     <CardHeader>
                         <CardTitle>Listagem</CardTitle>
                         <CardDescription>
-                            {contractors.data.length} contractor(s) na pagina
+                            {contractors.data.length} contractor(s) na página
                             atual.
                         </CardDescription>
                     </CardHeader>
@@ -226,15 +233,15 @@ export default function ContractorsIndex({
                             </div>
                         ) : (
                             <>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[640px] text-sm">
-                                        <thead className="border-b text-muted-foreground">
+                                <div className="overflow-x-auto rounded-lg border border-border/70">
+                                    <table className="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
+                                        <thead className="text-muted-foreground">
                                             <tr>
-                                                <th className="pb-3 align-top font-medium">
-                                                    <div className="space-y-3 pr-4">
+                                                <th className="border-r border-border/80 px-5 pt-4 pb-3 align-top font-medium">
+                                                    <div className="space-y-3">
                                                         <button
                                                             type="button"
-                                                            className={`flex items-center gap-2 transition-colors ${
+                                                            className={`flex w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors ${
                                                                 filters.sort ===
                                                                 'name'
                                                                     ? 'text-foreground'
@@ -268,11 +275,11 @@ export default function ContractorsIndex({
                                                         />
                                                     </div>
                                                 </th>
-                                                <th className="pb-3 align-top font-medium">
-                                                    <div className="space-y-3 pr-4">
+                                                <th className="border-r border-border/80 px-5 pt-4 pb-3 align-top font-medium">
+                                                    <div className="space-y-3">
                                                         <button
                                                             type="button"
-                                                            className={`flex items-center gap-2 transition-colors ${
+                                                            className={`flex w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors ${
                                                                 filters.sort ===
                                                                 'cnpj'
                                                                     ? 'text-foreground'
@@ -306,11 +313,11 @@ export default function ContractorsIndex({
                                                         />
                                                     </div>
                                                 </th>
-                                                <th className="pb-3 align-top font-medium">
-                                                    <div className="space-y-3 pr-4">
+                                                <th className="border-r border-border/80 px-5 pt-4 pb-3 align-top font-medium">
+                                                    <div className="space-y-3">
                                                         <button
                                                             type="button"
-                                                            className={`flex items-center gap-2 transition-colors ${
+                                                            className={`flex w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors ${
                                                                 filters.sort ===
                                                                 'active'
                                                                     ? 'text-foreground'
@@ -365,38 +372,68 @@ export default function ContractorsIndex({
                                                         </Select>
                                                     </div>
                                                 </th>
-                                                <th className="pb-3 text-center align-middle font-medium">
-                                                    Acoes
+                                                <th className="px-5 pt-4 pb-3 text-center align-middle font-medium">
+                                                    Ações
                                                 </th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                    colSpan={4}
+                                                    className="h-0 border-b border-border/70 p-0"
+                                                />
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {contractors.data.map(
-                                                (contractor) => (
+                                                (contractor, rowIndex) => (
                                                     <tr
                                                         key={contractor.id}
-                                                        className="cursor-pointer border-b transition-colors odd:bg-muted/[0.16] even:bg-background hover:bg-muted/30 last:border-b-0"
+                                                        className="cursor-pointer transition-colors odd:bg-muted/[0.16] even:bg-background hover:bg-muted/30"
                                                         onClick={() =>
                                                             handleView(
                                                                 contractor,
                                                             )
                                                         }
                                                     >
-                                                        <td className="py-4 align-middle">
+                                                        <td
+                                                            className={`border-r border-border/70 px-5 py-4 align-middle ${
+                                                                rowIndex ===
+                                                                contractors.data.length -
+                                                                    1
+                                                                    ? ''
+                                                                    : 'border-b'
+                                                            }`}
+                                                        >
                                                             <div className="flex min-h-10 items-center justify-center text-center font-medium">
                                                                 {
                                                                     contractor.name
                                                                 }
                                                             </div>
                                                         </td>
-                                                        <td className="py-4 align-middle text-muted-foreground">
+                                                        <td
+                                                            className={`border-r border-border/70 px-5 py-4 align-middle text-muted-foreground ${
+                                                                rowIndex ===
+                                                                contractors.data.length -
+                                                                    1
+                                                                    ? ''
+                                                                    : 'border-b'
+                                                            }`}
+                                                        >
                                                             <div className="flex min-h-10 items-center justify-center text-center">
                                                                 {formatCnpj(
                                                                     contractor.cnpj,
                                                                 )}
                                                             </div>
                                                         </td>
-                                                        <td className="py-4 align-middle">
+                                                        <td
+                                                            className={`border-r border-border/70 px-5 py-4 align-middle ${
+                                                                rowIndex ===
+                                                                contractors.data.length -
+                                                                    1
+                                                                    ? ''
+                                                                    : 'border-b'
+                                                            }`}
+                                                        >
                                                             <div
                                                                 className="flex min-h-10 items-center justify-center"
                                                                 onClick={(
@@ -422,38 +459,68 @@ export default function ContractorsIndex({
                                                                 />
                                                             </div>
                                                         </td>
-                                                        <td className="py-4 align-middle">
-                                                            <div className="flex min-h-10 items-center justify-center gap-2">
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={(
-                                                                        event,
-                                                                    ) => {
-                                                                        event.stopPropagation();
-                                                                        handleEdit(
-                                                                            contractor,
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    Editar
-                                                                </Button>
-                                                                <Dialog>
-                                                                    <DialogTrigger
-                                                                        asChild
-                                                                    >
-                                                                        <Button
-                                                                            variant="destructive"
-                                                                            size="sm"
-                                                                            onClick={(
-                                                                                event,
-                                                                            ) =>
-                                                                                event.stopPropagation()
-                                                                            }
+                                                        <td
+                                                            className={`border-border/70 px-5 py-4 align-middle ${
+                                                                rowIndex ===
+                                                                contractors.data.length -
+                                                                    1
+                                                                    ? ''
+                                                                    : 'border-b'
+                                                            }`}
+                                                        >
+                                                            <TooltipProvider>
+                                                                <div className="flex min-h-10 items-center justify-center gap-1">
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger
+                                                                            asChild
                                                                         >
-                                                                            Excluir
-                                                                        </Button>
-                                                                    </DialogTrigger>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                className="bg-muted/40 hover:bg-muted"
+                                                                                onClick={(
+                                                                                    event,
+                                                                                ) => {
+                                                                                    event.stopPropagation();
+                                                                                    handleEdit(
+                                                                                        contractor,
+                                                                                    );
+                                                                                }}
+                                                                            >
+                                                                                <Pencil />
+                                                                            </Button>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>
+                                                                            Editar
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+
+                                                                    <Dialog>
+                                                                        <Tooltip>
+                                                                            <TooltipTrigger
+                                                                                asChild
+                                                                            >
+                                                                                <DialogTrigger
+                                                                                    asChild
+                                                                                >
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive"
+                                                                                        onClick={(
+                                                                                            event,
+                                                                                        ) =>
+                                                                                            event.stopPropagation()
+                                                                                        }
+                                                                                    >
+                                                                                        <Trash2 />
+                                                                                    </Button>
+                                                                                </DialogTrigger>
+                                                                            </TooltipTrigger>
+                                                                            <TooltipContent>
+                                                                                Excluir
+                                                                            </TooltipContent>
+                                                                        </Tooltip>
                                                                     <DialogContent>
                                                                         <DialogHeader>
                                                                             <DialogTitle>
@@ -495,8 +562,9 @@ export default function ContractorsIndex({
                                                                             </Button>
                                                                         </DialogFooter>
                                                                     </DialogContent>
-                                                                </Dialog>
-                                                            </div>
+                                                                    </Dialog>
+                                                                </div>
+                                                            </TooltipProvider>
                                                         </td>
                                                     </tr>
                                                 ),
@@ -505,7 +573,7 @@ export default function ContractorsIndex({
                                     </table>
                                 </div>
 
-                                <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                                     <p className="text-sm text-muted-foreground">
                                         Pagina {contractors.current_page} de{' '}
                                         {contractors.last_page}
@@ -586,7 +654,7 @@ export default function ContractorsIndex({
                                                 }
                                             }}
                                         >
-                                            Proxima
+                                            Próxima
                                         </Button>
                                     </div>
                                 </div>
@@ -709,7 +777,7 @@ export default function ContractorsIndex({
                             submitLabel={
                                 sheetMode === 'create'
                                     ? 'Criar contractor'
-                                    : 'Salvar alteracoes'
+                                    : 'Salvar alterações'
                             }
                             onSuccess={() => {
                                 setSheetOpen(false);
