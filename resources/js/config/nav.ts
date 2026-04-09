@@ -1,7 +1,8 @@
-import { Building2, LayoutGrid } from 'lucide-react';
+import { Building2, LayoutGrid, Users } from 'lucide-react';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
 import { index as contractorsIndex } from '@/routes/admin/contractors';
+import { index as managersIndex } from '@/routes/admin/managers';
 import { dashboard as managerDashboard } from '@/routes/manager';
 import type { NavItem } from '@/types';
 
@@ -32,6 +33,11 @@ export function getMainNavItems(role: string): NavItem[] {
                       title: 'Contractors',
                       href: contractorsIndex(),
                       icon: Building2,
+                  },
+                  {
+                      title: 'Gestores',
+                      href: managersIndex(),
+                      icon: Users,
                   },
               ]
             : []),

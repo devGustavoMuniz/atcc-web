@@ -20,10 +20,20 @@ class RolesSeeder extends Seeder
 
     public function run(): void
     {
+        $defaultContractor = Contractor::query()->firstOrCreate(
+            ['name' => 'ATCC Gestores'],
+            ['cnpj' => '55.555.555/0001-55', 'active' => true],
+        );
+
+        if (! $defaultContractor->active) {
+            $defaultContractor->update(['active' => true]);
+        }
+
         $this->userRepository->updateOrCreateByEmail('admin@atcc.dev', [
             'name' => 'Administrador',
             'password' => Hash::make((string) config('roles.seed_passwords.admin')),
             'role' => UserRole::Admin,
+            'active' => true,
             'email_verified_at' => now(),
         ]);
 
@@ -31,6 +41,7 @@ class RolesSeeder extends Seeder
             'name' => 'Gestor',
             'password' => Hash::make((string) config('roles.seed_passwords.manager')),
             'role' => UserRole::Gestor,
+            'active' => true,
             'email_verified_at' => now(),
         ]);
 
@@ -38,11 +49,15 @@ class RolesSeeder extends Seeder
             'name' => 'Paciente',
             'password' => Hash::make((string) config('roles.seed_passwords.patient')),
             'role' => UserRole::Paciente,
+            'active' => true,
             'email_verified_at' => now(),
         ]);
 
         $this->managerProfileRepository->updateOrCreateForUser($gestor, [
-            'contractor_id' => Contractor::query()->value('id'),
+            'contractor_id' => Contractor::query()
+                ->where('active', true)
+                ->orderBy('id')
+                ->value('id') ?? $defaultContractor->id,
         ]);
 
         $this->patientProfileRepository->updateOrCreateForUser($paciente, [
