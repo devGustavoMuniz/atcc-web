@@ -87,7 +87,7 @@ export default function ContractorsIndex({
 
                     <Button onClick={handleCreate}>
                         <Plus />
-                        Novo contractor
+                        Nova contratante
                     </Button>
                 </div>
 
@@ -129,7 +129,7 @@ export default function ContractorsIndex({
 ContractorsIndex.layout = {
     breadcrumbs: [
         {
-            title: 'Contractors',
+            title: 'Contratantes',
             href: index(),
         },
     ],

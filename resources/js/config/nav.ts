@@ -30,7 +30,7 @@ export function getMainNavItems(role: string): NavItem[] {
         ...(role === 'admin'
             ? [
                   {
-                      title: 'Contractors',
+                      title: 'Contratantes',
                       href: contractorsIndex(),
                       icon: Building2,
                   },

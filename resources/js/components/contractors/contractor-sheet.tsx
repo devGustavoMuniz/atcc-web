@@ -45,10 +45,10 @@ export function ContractorSheet({
                 <SheetHeader className="border-b px-6 py-6 pr-14">
                     <SheetTitle>
                         {mode === 'create'
-                            ? 'Novo contractor'
+                            ? 'Nova contratante'
                             : mode === 'edit'
-                              ? 'Editar contractor'
-                              : 'Detalhes do contractor'}
+                              ? 'Editar contratante'
+                              : 'Detalhes da contratante'}
                     </SheetTitle>
                     <SheetDescription>
                         {mode === 'create'
@@ -72,7 +72,7 @@ export function ContractorSheet({
                                             {contractor.name}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
-                                            Contractor administrativo
+                                            Contratante administrativa
                                         </p>
                                     </div>
                                 </div>
@@ -119,7 +119,7 @@ export function ContractorSheet({
                         <div className="border-t px-6 py-4">
                             <Button onClick={() => onEdit(contractor)}>
                                 <Pencil />
-                                Editar contractor
+                                Editar contratante
                             </Button>
                         </div>
                     </div>
@@ -134,7 +134,7 @@ export function ContractorSheet({
                         contractor={formContractor}
                         submitLabel={
                             mode === 'create'
-                                ? 'Criar contractor'
+                                ? 'Criar contratante'
                                 : 'Salvar alterações'
                         }
                         onSuccess={onSuccess}

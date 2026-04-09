@@ -66,7 +66,8 @@ export default function ManagerForm({
             contractor_id: manager.contractor_id,
             active: manager.active,
         });
-    }, [form, manager]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [manager.id, manager.name, manager.email, manager.contractor_id, manager.active]);
 
     return (
         <form
@@ -132,7 +133,7 @@ export default function ManagerForm({
                 </div>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="contractor_id">Contractor</Label>
+                    <Label htmlFor="contractor_id">Contratante</Label>
                     <Select
                         value={form.data.contractor_id}
                         onValueChange={(value) =>
@@ -140,7 +141,7 @@ export default function ManagerForm({
                         }
                     >
                         <SelectTrigger id="contractor_id" className="w-full">
-                            <SelectValue placeholder="Selecione um contractor" />
+                            <SelectValue placeholder="Selecione uma contratante" />
                         </SelectTrigger>
                         <SelectContent align="start">
                             {contractors.map((contractor) => (

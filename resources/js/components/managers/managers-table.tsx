@@ -206,7 +206,7 @@ export function ManagersTable({
                                         <TableHead className="border-r border-border/80 px-5 pt-4 pb-3 align-top">
                                             <div className="space-y-3">
                                                 <span className="block text-sm font-medium">
-                                                    Contractor
+                                                    Contratante
                                                 </span>
                                                 <Select
                                                     value={

@@ -108,7 +108,7 @@ export function ContractorsTable({
             <CardHeader>
                 <CardTitle>Listagem</CardTitle>
                 <CardDescription>
-                    {contractors.data.length} contractor(s) na página atual.
+                    {contractors.data.length} contratante(s) na página atual.
                 </CardDescription>
             </CardHeader>
 
@@ -119,7 +119,7 @@ export function ContractorsTable({
                             <Building2 className="size-6 text-muted-foreground" />
                         </div>
                         <h3 className="text-lg font-semibold">
-                            Nenhum contractor cadastrado
+                            Nenhuma contratante cadastrada
                         </h3>
                         <p className="mt-2 max-w-md text-sm text-muted-foreground">
                             Crie a primeira contratante para comecar a organizar
@@ -127,7 +127,7 @@ export function ContractorsTable({
                         </p>
                         {onCreate ? (
                             <Button className="mt-6" onClick={onCreate}>
-                                Novo contractor
+                                Nova contratante
                             </Button>
                         ) : null}
                     </div>

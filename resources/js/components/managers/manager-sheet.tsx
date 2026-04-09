@@ -113,7 +113,7 @@ export function ManagerSheet({
                                     </div>
                                     <div className="space-y-1">
                                         <dt className="text-sm font-medium text-muted-foreground">
-                                            Contractor vinculado
+                                            Contratante vinculada
                                         </dt>
                                         <dd className="text-sm font-medium">
                                             {manager.manager_profile?.contractor

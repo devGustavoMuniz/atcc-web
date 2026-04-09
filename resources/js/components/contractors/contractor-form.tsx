@@ -44,7 +44,8 @@ export default function ContractorForm({
             cnpj: formatCnpjMask(contractor.cnpj ?? ''),
             active: contractor.active,
         });
-    }, [contractor, form]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [contractor.id, contractor.name, contractor.cnpj, contractor.active]);
 
     return (
         <form
@@ -100,9 +101,9 @@ export default function ContractorForm({
                     />
 
                     <div className="grid gap-1">
-                        <Label htmlFor="active">Contractor ativo</Label>
+                        <Label htmlFor="active">Contratante ativa</Label>
                         <p className="text-sm text-muted-foreground">
-                            Contractors inativos permanecem cadastrados, mas
+                            Contratantes inativas permanecem cadastradas, mas
                             ficam sinalizados na listagem.
                         </p>
                     </div>
