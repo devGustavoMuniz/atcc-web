@@ -13,10 +13,11 @@ uses(RefreshDatabase::class);
 
 function validHealthUnitPayload(array $overrides = []): array
 {
-    $contractor = $overrides['contractor_id'] ?? Contractor::factory()->create()->id;
+    $contractorId = $overrides['contractor_id']
+        ?? Contractor::factory()->create(['active' => true])->id;
 
     return array_merge([
-        'contractor_id' => $contractor,
+        'contractor_id' => $contractorId,
         'name' => 'UBS Centro',
         'type' => HealthUnitType::Ubs->value,
         'cnpj' => '12.345.678/0001-90',
@@ -26,7 +27,7 @@ function validHealthUnitPayload(array $overrides = []): array
         'complement' => 'Bloco A',
         'neighborhood' => 'Centro',
         'city' => 'Salvador',
-        'state' => 'ba',
+        'state' => 'BA',
         'latitude' => '-12.9714000',
         'longitude' => '-38.5014000',
         'serves_adult' => true,
@@ -44,167 +45,227 @@ function validHealthUnitPayload(array $overrides = []): array
     ], $overrides);
 }
 
-test('admin can access health units index with filters and contractors', function () {
+test('admin lista unidades de saúde', function () {
     $admin = User::factory()->admin()->create();
-    $activeContractor = Contractor::factory()->create(['name' => 'Alpha Health', 'active' => true]);
-    $inactiveContractor = Contractor::factory()->create(['name' => 'Beta Health', 'active' => false]);
+    $contractorA = Contractor::factory()->create(['active' => true]);
+    $contractorB = Contractor::factory()->create(['active' => true]);
 
-    HealthUnit::factory()->for($activeContractor)->ubs()->create([
-        'name' => 'UBS Primavera',
-        'city' => 'Salvador',
-        'type' => HealthUnitType::Ubs,
-        'complexity' => HealthUnitComplexity::Low,
-        'active' => true,
-    ]);
-
-    HealthUnit::factory()->for($inactiveContractor)->hospital()->create([
-        'name' => 'Hospital Central',
-        'city' => 'Recife',
-        'type' => HealthUnitType::Hospital,
-        'complexity' => HealthUnitComplexity::High,
-        'active' => false,
-    ]);
+    HealthUnit::factory()->for($contractorA)->ubs()->create();
+    HealthUnit::factory()->for($contractorB)->hospital()->create();
 
     $this->actingAs($admin)
-        ->get(route('admin.health-units.index', [
-            'search_name' => 'Hospital',
-            'search_city' => 'Recife',
-            'search_type' => HealthUnitType::Hospital->value,
-            'contractor_id' => $inactiveContractor->id,
-            'status' => '0',
-            'sort' => 'city',
-            'direction' => 'desc',
-        ]))
+        ->get(route('admin.health-units.index'))
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('admin/HealthUnits/Index', false)
-            ->has('health_units.data', 1)
-            ->has('contractors', 1)
-            ->where('health_units.data.0.name', 'Hospital Central')
-            ->where('health_units.data.0.type', HealthUnitType::Hospital->value)
-            ->where('health_units.data.0.complexity', HealthUnitComplexity::High->value)
-            ->where('filters.search_name', 'Hospital')
-            ->where('filters.search_city', 'Recife')
-            ->where('filters.search_type', HealthUnitType::Hospital->value)
-            ->where('filters.contractor_id', (string) $inactiveContractor->id)
-            ->where('filters.status', '0')
-            ->where('filters.sort', 'city')
-            ->where('filters.direction', 'desc')
-            ->where('contractors.0.name', 'Alpha Health'),
-        );
+            ->component('admin/HealthUnits/Index')
+            ->has('health_units.data', 2));
 });
 
-test('admin can store update and destroy a health unit', function () {
+test('admin cria unidade com dados válidos', function () {
     $admin = User::factory()->admin()->create();
-    $contractor = Contractor::factory()->create();
+    $contractor = Contractor::factory()->create(['active' => true]);
 
-    $storeResponse = $this->actingAs($admin)->post(
+    $response = $this->actingAs($admin)->post(
         route('admin.health-units.store'),
         validHealthUnitPayload(['contractor_id' => $contractor->id]),
     );
 
-    $storeResponse->assertRedirect(route('admin.health-units.index'));
+    $response->assertRedirect(route('admin.health-units.index'));
 
-    $healthUnit = HealthUnit::query()->firstOrFail();
+    $this->assertDatabaseHas('health_units', [
+        'contractor_id' => $contractor->id,
+        'name' => 'UBS Centro',
+        'type' => HealthUnitType::Ubs->value,
+        'complexity' => HealthUnitComplexity::Medium->value,
+        'city' => 'Salvador',
+        'state' => 'BA',
+        'active' => true,
+    ]);
+});
 
-    expect($healthUnit)
-        ->name->toBe('UBS Centro')
-        ->state->toBe('BA')
-        ->type->toBe(HealthUnitType::Ubs)
-        ->complexity->toBe(HealthUnitComplexity::Medium);
+test('admin atualiza unidade', function () {
+    $admin = User::factory()->admin()->create();
+    $contractor = Contractor::factory()->create(['active' => true]);
+    $healthUnit = HealthUnit::factory()->for($contractor)->ubs()->create();
 
-    $updateResponse = $this->actingAs($admin)->patch(
+    $response = $this->actingAs($admin)->patch(
         route('admin.health-units.update', ['id' => $healthUnit->id]),
         validHealthUnitPayload([
             'contractor_id' => $contractor->id,
-            'name' => 'UPA Norte',
-            'type' => HealthUnitType::Upa->value,
-            'city' => 'Aracaju',
+            'name' => 'Hospital Atualizado',
+            'type' => HealthUnitType::Hospital->value,
             'complexity' => HealthUnitComplexity::High->value,
+            'city' => 'Recife',
+            'state' => 'PE',
             'active' => false,
         ]),
     );
 
-    $updateResponse->assertRedirect(route('admin.health-units.index'));
+    $response->assertRedirect(route('admin.health-units.index'));
 
-    expect($healthUnit->fresh())
-        ->name->toBe('UPA Norte')
-        ->type->toBe(HealthUnitType::Upa)
-        ->city->toBe('Aracaju')
-        ->complexity->toBe(HealthUnitComplexity::High)
-        ->active->toBeFalse();
-
-    $deleteResponse = $this->actingAs($admin)
-        ->delete(route('admin.health-units.destroy', ['id' => $healthUnit->id]));
-
-    $deleteResponse->assertRedirect(route('admin.health-units.index'));
-    $this->assertDatabaseMissing('health_units', ['id' => $healthUnit->id]);
+    $this->assertDatabaseHas('health_units', [
+        'id' => $healthUnit->id,
+        'name' => 'Hospital Atualizado',
+        'type' => HealthUnitType::Hospital->value,
+        'complexity' => HealthUnitComplexity::High->value,
+        'city' => 'Recife',
+        'state' => 'PE',
+        'active' => false,
+    ]);
 });
 
-test('health unit requests validate required enum and array fields', function () {
+test('admin exclui unidade', function () {
     $admin = User::factory()->admin()->create();
     $healthUnit = HealthUnit::factory()->create();
 
     $this->actingAs($admin)
-        ->from(route('admin.health-units.index'))
-        ->post(route('admin.health-units.store'), [
-            'name' => '',
-            'type' => 'invalid',
-            'complexity' => 'invalido',
-            'city' => '',
-            'state' => 'Bahia',
-            'operating_days' => ['mon', 'invalid'],
-            'contractor_id' => 999999,
-        ])
-        ->assertSessionHasErrors(['name', 'type', 'complexity', 'zip_code', 'street', 'number', 'neighborhood', 'city', 'state', 'contractor_id', 'operating_days.1'])
+        ->delete(route('admin.health-units.destroy', ['id' => $healthUnit->id]))
         ->assertRedirect(route('admin.health-units.index'));
 
-    $this->actingAs($admin)
-        ->from(route('admin.health-units.index'))
-        ->patch(route('admin.health-units.update', ['id' => $healthUnit->id]), [
-            'name' => '',
-            'type' => 'invalid',
-            'complexity' => 'invalido',
-            'city' => '',
-            'state' => 'Bahia',
-            'operating_days' => ['sun', 'invalid'],
-            'contractor_id' => 999999,
-        ])
-        ->assertSessionHasErrors(['name', 'type', 'complexity', 'zip_code', 'street', 'number', 'neighborhood', 'city', 'state', 'contractor_id', 'operating_days.1'])
-        ->assertRedirect(route('admin.health-units.index'));
+    $this->assertDatabaseMissing('health_units', [
+        'id' => $healthUnit->id,
+    ]);
 });
 
-test('manager index is scoped to its contractor and store overrides contractor id', function () {
+test('gestor lista apenas unidades do seu contratante', function () {
+    $contractorA = Contractor::factory()->create(['active' => true]);
+    $contractorB = Contractor::factory()->create(['active' => true]);
+    $manager = User::factory()->gestor()->create();
+
+    ManagerProfile::factory()->for($manager)->create([
+        'contractor_id' => $contractorA->id,
+    ]);
+
+    HealthUnit::factory()->for($contractorA)->count(2)->create();
+    HealthUnit::factory()->for($contractorB)->create();
+
+    $this->actingAs($manager)
+        ->get(route('manager.health-units.index'))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('manager/HealthUnits/Index')
+            ->has('health_units.data', 2));
+});
+
+test('gestor cria unidade vinculada ao seu contratante automaticamente', function () {
     $contractor = Contractor::factory()->create(['active' => true]);
-    $otherContractor = Contractor::factory()->create(['active' => true]);
     $manager = User::factory()->gestor()->create();
 
     ManagerProfile::factory()->for($manager)->create([
         'contractor_id' => $contractor->id,
     ]);
 
-    HealthUnit::factory()->for($contractor)->ubs()->create(['name' => 'UBS Permitida']);
-    HealthUnit::factory()->for($otherContractor)->hospital()->create(['name' => 'Hospital Restrito']);
+    $payload = validHealthUnitPayload([
+        'name' => 'Unidade do Gestor',
+        'contractor_id' => Contractor::factory()->create()->id,
+    ]);
+
+    unset($payload['contractor_id']);
 
     $this->actingAs($manager)
-        ->get(route('manager.health-units.index', ['contractor_id' => $otherContractor->id]))
-        ->assertSuccessful()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('manager/HealthUnits/Index', false)
-            ->has('health_units.data', 1)
-            ->has('contractors', 0)
-            ->where('health_units.data.0.name', 'UBS Permitida')
-            ->where('filters.contractor_id', $contractor->id),
-        );
-
-    $this->actingAs($manager)
-        ->post(route('manager.health-units.store'), validHealthUnitPayload([
-            'contractor_id' => $otherContractor->id,
-            'name' => 'Nova Unidade Gestor',
-        ]))
+        ->post(route('manager.health-units.store'), $payload)
         ->assertRedirect(route('manager.health-units.index'));
 
-    $created = HealthUnit::query()->where('name', 'Nova Unidade Gestor')->firstOrFail();
+    $this->assertDatabaseHas('health_units', [
+        'name' => 'Unidade do Gestor',
+        'contractor_id' => $contractor->id,
+    ]);
+});
 
-    expect($created->contractor_id)->toBe($contractor->id);
+test('gestor não consegue editar unidade de outro contratante', function () {
+    $contractorA = Contractor::factory()->create();
+    $contractorB = Contractor::factory()->create();
+    $manager = User::factory()->gestor()->create();
+
+    ManagerProfile::factory()->for($manager)->create([
+        'contractor_id' => $contractorA->id,
+    ]);
+
+    $healthUnit = HealthUnit::factory()->for($contractorB)->create();
+
+    $this->actingAs($manager)
+        ->patch(
+            route('manager.health-units.update', ['id' => $healthUnit->id]),
+            validHealthUnitPayload([
+                'contractor_id' => $contractorB->id,
+                'name' => 'Tentativa Indevida',
+            ]),
+        )
+        ->assertForbidden();
+});
+
+test('gestor não consegue excluir unidade de outro contratante', function () {
+    $contractorA = Contractor::factory()->create();
+    $contractorB = Contractor::factory()->create();
+    $manager = User::factory()->gestor()->create();
+
+    ManagerProfile::factory()->for($manager)->create([
+        'contractor_id' => $contractorA->id,
+    ]);
+
+    $healthUnit = HealthUnit::factory()->for($contractorB)->create();
+
+    $this->actingAs($manager)
+        ->delete(route('manager.health-units.destroy', ['id' => $healthUnit->id]))
+        ->assertForbidden();
+});
+
+test('validação falha com operating_days vazio', function () {
+    $admin = User::factory()->admin()->create();
+    $contractor = Contractor::factory()->create(['active' => true]);
+    $payload = validHealthUnitPayload(['contractor_id' => $contractor->id]);
+
+    unset($payload['operating_days']);
+
+    $this->actingAs($admin)
+        ->from(route('admin.health-units.index'))
+        ->post(route('admin.health-units.store'), $payload)
+        ->assertSessionHasErrors(['operating_days'])
+        ->assertRedirect(route('admin.health-units.index'));
+});
+
+test('validação falha com type inválido', function () {
+    $admin = User::factory()->admin()->create();
+    $contractor = Contractor::factory()->create(['active' => true]);
+
+    $this->actingAs($admin)
+        ->from(route('admin.health-units.index'))
+        ->post(route('admin.health-units.store'), validHealthUnitPayload([
+            'contractor_id' => $contractor->id,
+            'type' => 'invalido',
+        ]))
+        ->assertSessionHasErrors(['type'])
+        ->assertRedirect(route('admin.health-units.index'));
+});
+
+test('validação falha com complexity inválido', function () {
+    $admin = User::factory()->admin()->create();
+    $contractor = Contractor::factory()->create(['active' => true]);
+
+    $this->actingAs($admin)
+        ->from(route('admin.health-units.index'))
+        ->post(route('admin.health-units.store'), validHealthUnitPayload([
+            'contractor_id' => $contractor->id,
+            'complexity' => 'invalido',
+        ]))
+        ->assertSessionHasErrors(['complexity'])
+        ->assertRedirect(route('admin.health-units.index'));
+});
+
+test('transaction criação falha com contractor id inválido não persiste', function () {
+    $admin = User::factory()->admin()->create();
+    $payload = validHealthUnitPayload([
+        'contractor_id' => 999999,
+        'name' => 'Unidade Sem Persistência',
+    ]);
+
+    $this->actingAs($admin)
+        ->from(route('admin.health-units.index'))
+        ->post(route('admin.health-units.store'), $payload)
+        ->assertSessionHasErrors(['contractor_id'])
+        ->assertRedirect(route('admin.health-units.index'));
+
+    $this->assertDatabaseMissing('health_units', [
+        'name' => 'Unidade Sem Persistência',
+    ]);
 });

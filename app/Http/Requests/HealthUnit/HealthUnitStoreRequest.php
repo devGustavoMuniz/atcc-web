@@ -46,7 +46,7 @@ class HealthUnitStoreRequest extends FormRequest
             'operating_days.*' => [Rule::in(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])],
             'daily_capacity' => ['nullable', 'integer', 'min:1'],
             'active' => ['required', 'boolean'],
-            'contractor_id' => ['required', 'exists:contractors,id'],
+            'contractor_id' => [$this->isManagerRoute() ? 'nullable' : 'required', 'exists:contractors,id'],
         ];
     }
 
@@ -78,5 +78,10 @@ class HealthUnitStoreRequest extends FormRequest
             'active' => $this->boolean('active'),
             'contractor_id' => $this->filled('contractor_id') ? (string) $this->input('contractor_id') : null,
         ]);
+    }
+
+    private function isManagerRoute(): bool
+    {
+        return $this->routeIs('manager.health-units.*');
     }
 }
