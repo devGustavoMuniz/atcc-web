@@ -6,9 +6,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCnpjMask } from '@/lib/formatters';
+import type { RouteDefinition } from '@/wayfinder';
 
 type ContractorFormProps = {
-    action: any;
+    action: RouteDefinition<'post' | 'patch'>;
     contractor: {
         id?: number;
         name: string;
@@ -43,7 +44,7 @@ export default function ContractorForm({
             cnpj: formatCnpjMask(contractor.cnpj ?? ''),
             active: contractor.active,
         });
-    }, [contractor]);
+    }, [contractor, form]);
 
     return (
         <form
