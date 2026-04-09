@@ -3,14 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Contractor;
-use App\Models\ManagerProfile;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<ManagerProfile>
+ * @extends Factory<Contractor>
  */
-class ManagerProfileFactory extends Factory
+class ContractorFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -20,8 +18,9 @@ class ManagerProfileFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
-            'contractor_id' => Contractor::factory(),
+            'name' => fake()->company(),
+            'cnpj' => fake()->optional()->numerify('##.###.###/####-##'),
+            'active' => fake()->boolean(85),
         ];
     }
 }

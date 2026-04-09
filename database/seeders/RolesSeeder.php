@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\UserRole;
+use App\Models\Contractor;
 use App\Repositories\ManagerProfileRepository;
 use App\Repositories\PatientProfileRepository;
 use App\Repositories\UserRepository;
@@ -41,7 +42,7 @@ class RolesSeeder extends Seeder
         ]);
 
         $this->managerProfileRepository->updateOrCreateForUser($gestor, [
-            'contractor_id' => null,
+            'contractor_id' => Contractor::query()->value('id'),
         ]);
 
         $this->patientProfileRepository->updateOrCreateForUser($paciente, [

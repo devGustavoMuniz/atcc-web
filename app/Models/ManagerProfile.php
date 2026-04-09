@@ -25,4 +25,9 @@ class ManagerProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function contractor(): BelongsTo
+    {
+        return $this->belongsTo(Contractor::class);
+    }
 }
