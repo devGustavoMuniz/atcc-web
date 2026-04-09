@@ -1,9 +1,11 @@
-import { Building2, LayoutGrid, Users } from 'lucide-react';
+import { Building, Building2, LayoutGrid, Users } from 'lucide-react';
 import { dashboard } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
 import { index as contractorsIndex } from '@/routes/admin/contractors';
+import { index as healthUnitsAdminIndex } from '@/routes/admin/health-units';
 import { index as managersIndex } from '@/routes/admin/managers';
 import { dashboard as managerDashboard } from '@/routes/manager';
+import { index as healthUnitsManagerIndex } from '@/routes/manager/health-units';
 import type { NavItem } from '@/types';
 
 export function getMainNavItems(role: string): NavItem[] {
@@ -39,7 +41,20 @@ export function getMainNavItems(role: string): NavItem[] {
                       href: managersIndex(),
                       icon: Users,
                   },
+                  {
+                      title: 'Unidades de Saúde',
+                      href: healthUnitsAdminIndex(),
+                      icon: Building,
+                  },
               ]
+            : role === 'gestor'
+              ? [
+                    {
+                        title: 'Unidades de Saúde',
+                        href: healthUnitsManagerIndex(),
+                        icon: Building,
+                    },
+                ]
             : []),
     ];
 }

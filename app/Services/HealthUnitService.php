@@ -32,6 +32,7 @@ class HealthUnitService
             'search_name' => $request->validated('search_name'),
             'search_city' => $request->validated('search_city'),
             'search_type' => $request->validated('search_type'),
+            'search_complexity' => $request->validated('search_complexity'),
             'contractor_id' => $contractorId ?? $request->validated('contractor_id'),
             'status' => $request->validated('status'),
             'sort' => $request->validated('sort') ?? 'name',

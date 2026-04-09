@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\HealthUnit;
 
+use App\Enums\HealthUnitComplexity;
 use App\Enums\HealthUnitType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,6 +24,7 @@ class HealthUnitIndexRequest extends FormRequest
             'search_name' => ['nullable', 'string', 'max:255'],
             'search_city' => ['nullable', 'string', 'max:255'],
             'search_type' => ['nullable', Rule::in(array_column(HealthUnitType::cases(), 'value'))],
+            'search_complexity' => ['nullable', Rule::in(array_column(HealthUnitComplexity::cases(), 'value'))],
             'contractor_id' => ['nullable', 'exists:contractors,id'],
             'status' => ['nullable', Rule::in(['0', '1'])],
             'sort' => ['nullable', Rule::in(['name', 'type', 'city', 'complexity', 'active'])],
@@ -41,6 +43,9 @@ class HealthUnitIndexRequest extends FormRequest
                 : null,
             'search_type' => $this->filled('search_type')
                 ? $this->string('search_type')->trim()->value()
+                : null,
+            'search_complexity' => $this->filled('search_complexity')
+                ? $this->string('search_complexity')->trim()->value()
                 : null,
             'contractor_id' => $this->filled('contractor_id')
                 ? (string) $this->input('contractor_id')

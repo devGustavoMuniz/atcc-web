@@ -35,6 +35,7 @@ export type HealthUnitFilters = {
     search_name: string;
     search_city: string;
     search_type: string;
+    search_complexity: string;
     contractor_id: string;
     status: string;
     sort: 'name' | 'type' | 'city' | 'complexity' | 'active';

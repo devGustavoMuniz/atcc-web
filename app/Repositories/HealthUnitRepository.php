@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\HealthUnitComplexity;
 use App\Enums\HealthUnitType;
 use App\Models\HealthUnit;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -33,6 +34,10 @@ class HealthUnitRepository
             ->when(
                 HealthUnitType::tryFrom((string) ($filters['search_type'] ?? '')) !== null,
                 fn (Builder $query): Builder => $query->where('type', (string) $filters['search_type']),
+            )
+            ->when(
+                HealthUnitComplexity::tryFrom((string) ($filters['search_complexity'] ?? '')) !== null,
+                fn (Builder $query): Builder => $query->where('complexity', (string) $filters['search_complexity']),
             )
             ->when(
                 filled($filters['contractor_id'] ?? null),
