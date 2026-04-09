@@ -16,3 +16,4 @@ export type * from './navigation';
 export type * from './ui';
 export type * from './contractors';
 export type * from './managers';
+export type * from './health-units';
