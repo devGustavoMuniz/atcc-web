@@ -67,6 +67,7 @@ import type {
 type ManagersTableProps = {
     managers: LaravelPaginator<ManagerRow>;
     filters: ManagerFilters;
+    serverHasActiveFilters: boolean;
     contractors: ContractorOption[];
     updatingManagerId: number | null;
     onCreate?: () => void;
@@ -104,7 +105,9 @@ export function ManagersTable({
     onStatusToggle,
     onFilterChange,
     onSortChange,
+    serverHasActiveFilters,
 }: ManagersTableProps) {
+
     return (
         <Card>
             <CardHeader>
@@ -115,7 +118,7 @@ export function ManagersTable({
             </CardHeader>
 
             <CardContent>
-                {managers.data.length === 0 ? (
+                {managers.data.length === 0 && !serverHasActiveFilters ? (
                     <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/20 px-6 py-12 text-center">
                         <div className="mb-4 rounded-full border border-border/80 bg-background p-3 shadow-sm">
                             <Users className="size-6 text-muted-foreground" />
@@ -433,6 +436,17 @@ export function ManagersTable({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
+                                    {managers.data.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={5}
+                                                className="py-16 text-center text-sm text-muted-foreground"
+                                            >
+                                                Nenhum gestor encontrado para os
+                                                filtros aplicados.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : null}
                                     {managers.data.map((manager) => (
                                         <TableRow
                                             key={manager.id}
@@ -583,6 +597,15 @@ export function ManagersTable({
                             </Table>
                         </div>
 
+                        {managers.data.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/70 py-12 text-center sm:hidden">
+                                <p className="text-sm text-muted-foreground">
+                                    Nenhum gestor encontrado para os filtros
+                                    aplicados.
+                                </p>
+                            </div>
+                        ) : null}
+
                         <div className="flex flex-col gap-3 sm:hidden">
                             {managers.data.map((manager) => (
                                 <div
@@ -695,6 +718,7 @@ export function ManagersTable({
                             ))}
                         </div>
 
+                        {managers.data.length > 0 ? (
                         <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                             <p className="text-sm text-muted-foreground">
                                 Página {managers.current_page} de{' '}
@@ -803,6 +827,7 @@ export function ManagersTable({
                                 </PaginationContent>
                             </Pagination>
                         </div>
+                        ) : null}
                     </>
                 )}
             </CardContent>

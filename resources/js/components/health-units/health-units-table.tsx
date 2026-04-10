@@ -71,6 +71,7 @@ import type {
 type HealthUnitsTableProps = {
     healthUnits: LaravelPaginator<HealthUnitRow>;
     filters: HealthUnitFilters;
+    serverHasActiveFilters: boolean;
     contractors: ContractorOption[];
     updatingHealthUnitId: number | null;
     isAdmin: boolean;
@@ -125,6 +126,7 @@ function getComplexityBadgeVariant(complexity: HealthUnitComplexity) {
 export function HealthUnitsTable({
     healthUnits,
     filters,
+    serverHasActiveFilters,
     contractors,
     updatingHealthUnitId,
     isAdmin,
@@ -148,7 +150,7 @@ export function HealthUnitsTable({
             </CardHeader>
 
             <CardContent>
-                {healthUnits.data.length === 0 ? (
+                {healthUnits.data.length === 0 && !serverHasActiveFilters ? (
                     <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/20 px-6 py-12 text-center">
                         <div className="mb-4 rounded-full border border-border/80 bg-background p-3 shadow-sm">
                             <Building className="size-6 text-muted-foreground" />
@@ -669,6 +671,18 @@ export function HealthUnitsTable({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
+                                    {healthUnits.data.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={isAdmin ? 7 : 6}
+                                                className="py-16 text-center text-sm text-muted-foreground"
+                                            >
+                                                Nenhuma unidade de saúde
+                                                encontrada para os filtros
+                                                aplicados.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : null}
                                     {healthUnits.data.map((healthUnit) => (
                                         <TableRow
                                             key={healthUnit.id}
@@ -849,6 +863,15 @@ export function HealthUnitsTable({
                             </Table>
                         </div>
 
+                        {healthUnits.data.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/70 py-12 text-center sm:hidden">
+                                <p className="text-sm text-muted-foreground">
+                                    Nenhuma unidade de saúde encontrada para os
+                                    filtros aplicados.
+                                </p>
+                            </div>
+                        ) : null}
+
                         <div className="flex flex-col gap-3 sm:hidden">
                             {healthUnits.data.map((healthUnit) => (
                                 <div
@@ -987,6 +1010,7 @@ export function HealthUnitsTable({
                             ))}
                         </div>
 
+                        {healthUnits.data.length > 0 ? (
                         <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                             <p className="text-sm text-muted-foreground">
                                 Página {healthUnits.current_page} de{' '}
@@ -1103,6 +1127,7 @@ export function HealthUnitsTable({
                                 </PaginationContent>
                             </Pagination>
                         </div>
+                        ) : null}
                     </>
                 )}
             </CardContent>

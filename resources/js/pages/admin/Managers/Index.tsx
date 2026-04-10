@@ -24,6 +24,12 @@ type Props = {
 export default function ManagersIndex({ managers, filters: initialFilters, contractors }: Props) {
     const [updatingManagerId, setUpdatingManagerId] = useState<number | null>(null);
     const { sheetOpen, setSheetOpen, sheetMode, setSheetMode, selectedManager, setSelectedManager, handleCreate, handleView, handleEdit } = useManagerSheet();
+    const serverHasActiveFilters =
+        (initialFilters.search_name ?? '') !== '' ||
+        (initialFilters.search_email ?? '') !== '' ||
+        (initialFilters.contractor_id ?? '') !== '' ||
+        (initialFilters.status ?? '') !== '';
+
     const { filters, handleFilterChange, handleSortChange } = useTableFilters<ManagerFilters>({
         initialFilters: { search_name: initialFilters.search_name ?? '', search_email: initialFilters.search_email ?? '', contractor_id: initialFilters.contractor_id ?? '', status: initialFilters.status ?? '', sort: initialFilters.sort ?? 'name', direction: initialFilters.direction ?? 'asc' },
         url: index.url(),
@@ -46,7 +52,7 @@ export default function ManagersIndex({ managers, filters: initialFilters, contr
                 <Heading title="Gestores" description="Gerencie os gestores vinculados ao ambiente administrativo." />
                 <Button onClick={handleCreate}><Plus />Novo gestor</Button>
             </div>
-            <ManagersTable managers={managers} filters={filters} contractors={contractors} updatingManagerId={updatingManagerId} onCreate={handleCreate} onView={handleView} onEdit={handleEdit} onStatusToggle={handleStatusToggle} onFilterChange={handleFilterChange} onSortChange={handleSortChange} />
+            <ManagersTable managers={managers} filters={filters} serverHasActiveFilters={serverHasActiveFilters} contractors={contractors} updatingManagerId={updatingManagerId} onCreate={handleCreate} onView={handleView} onEdit={handleEdit} onStatusToggle={handleStatusToggle} onFilterChange={handleFilterChange} onSortChange={handleSortChange} />
         </div>
         <ManagerSheet open={sheetOpen} onOpenChange={(open) => { setSheetOpen(open); if (!open) { setSelectedManager(null); } }} mode={sheetMode} manager={selectedManager} contractors={contractors} onEdit={handleEdit} onSuccess={() => { setSheetOpen(false); setSelectedManager(null); setSheetMode('create'); }} />
     </>;

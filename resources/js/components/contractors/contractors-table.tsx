@@ -67,6 +67,7 @@ import type {
 type ContractorsTableProps = {
     contractors: LaravelPaginator<ContractorRow>;
     filters: ContractorFilters;
+    serverHasActiveFilters: boolean;
     updatingContractorId: number | null;
     onCreate?: () => void;
     onView: (contractor: ContractorRow) => void;
@@ -95,6 +96,7 @@ function getSortIcon(
 export function ContractorsTable({
     contractors,
     filters,
+    serverHasActiveFilters,
     updatingContractorId,
     onCreate,
     onView,
@@ -103,6 +105,7 @@ export function ContractorsTable({
     onFilterChange,
     onSortChange,
 }: ContractorsTableProps) {
+
     return (
         <Card>
             <CardHeader>
@@ -113,7 +116,7 @@ export function ContractorsTable({
             </CardHeader>
 
             <CardContent>
-                {contractors.data.length === 0 ? (
+                {contractors.data.length === 0 && !serverHasActiveFilters ? (
                     <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/20 px-6 py-12 text-center">
                         <div className="mb-4 rounded-full border border-border/80 bg-background p-3 shadow-sm">
                             <Building2 className="size-6 text-muted-foreground" />
@@ -355,6 +358,17 @@ export function ContractorsTable({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
+                                    {contractors.data.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={4}
+                                                className="py-16 text-center text-sm text-muted-foreground"
+                                            >
+                                                Nenhuma contratante encontrada
+                                                para os filtros aplicados.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : null}
                                     {contractors.data.map((contractor) => (
                                         <TableRow
                                             key={contractor.id}
@@ -502,6 +516,15 @@ export function ContractorsTable({
                             </Table>
                         </div>
 
+                        {contractors.data.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/70 py-12 text-center sm:hidden">
+                                <p className="text-sm text-muted-foreground">
+                                    Nenhuma contratante encontrada para os
+                                    filtros aplicados.
+                                </p>
+                            </div>
+                        ) : null}
+
                         <div className="flex flex-col gap-3 sm:hidden">
                             {contractors.data.map((contractor) => (
                                 <div
@@ -606,6 +629,7 @@ export function ContractorsTable({
                             ))}
                         </div>
 
+                        {contractors.data.length > 0 ? (
                         <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
                             <p className="text-sm text-muted-foreground">
                                 Página {contractors.current_page} de{' '}
@@ -722,6 +746,7 @@ export function ContractorsTable({
                                 </PaginationContent>
                             </Pagination>
                         </div>
+                        ) : null}
                     </>
                 )}
             </CardContent>

@@ -41,6 +41,11 @@ export default function ContractorsIndex({
         handleView,
         handleEdit,
     } = useContractorSheet();
+    const serverHasActiveFilters =
+        (initialFilters.search_name ?? '') !== '' ||
+        (initialFilters.search_cnpj ?? '') !== '' ||
+        (initialFilters.status ?? '') !== '';
+
     const { filters, handleFilterChange, handleSortChange } =
         useTableFilters<ContractorFilters>({
             initialFilters: {
@@ -81,7 +86,7 @@ export default function ContractorsIndex({
             <div className="space-y-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
-                        title="Contractors"
+                        title="Contratantes"
                         description="Gerencie as contratantes vinculadas ao ambiente administrativo."
                     />
 
@@ -94,6 +99,7 @@ export default function ContractorsIndex({
                 <ContractorsTable
                     contractors={contractors}
                     filters={filters}
+                    serverHasActiveFilters={serverHasActiveFilters}
                     updatingContractorId={updatingContractorId}
                     onCreate={handleCreate}
                     onView={handleView}

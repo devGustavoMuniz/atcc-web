@@ -47,6 +47,14 @@ export default function HealthUnitsIndex({
         handleView,
         handleEdit,
     } = useHealthUnitSheet();
+    const serverHasActiveFilters =
+        (initialFilters.search_name ?? '') !== '' ||
+        (initialFilters.search_city ?? '') !== '' ||
+        (initialFilters.search_type ?? '') !== '' ||
+        (initialFilters.search_complexity ?? '') !== '' ||
+        (initialFilters.contractor_id ?? '') !== '' ||
+        (initialFilters.status ?? '') !== '';
+
     const { filters, handleFilterChange, handleSortChange } =
         useTableFilters<HealthUnitFilters>({
             initialFilters: {
@@ -125,6 +133,7 @@ export default function HealthUnitsIndex({
                 <HealthUnitsTable
                     healthUnits={healthUnits}
                     filters={filters}
+                    serverHasActiveFilters={serverHasActiveFilters}
                     contractors={contractors}
                     updatingHealthUnitId={updatingHealthUnitId}
                     isAdmin
