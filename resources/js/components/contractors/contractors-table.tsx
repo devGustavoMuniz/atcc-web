@@ -133,7 +133,102 @@ export function ContractorsTable({
                     </div>
                 ) : (
                     <>
-                        <div className="overflow-x-auto rounded-lg border border-border/70">
+                        <div className="flex flex-col gap-3 pb-4 sm:hidden">
+                            <Input
+                                value={filters.search_name}
+                                onChange={(event) =>
+                                    onFilterChange(
+                                        'search_name',
+                                        event.target.value,
+                                    )
+                                }
+                                placeholder="Buscar por nome"
+                            />
+                            <Input
+                                value={filters.search_cnpj}
+                                onChange={(event) =>
+                                    onFilterChange(
+                                        'search_cnpj',
+                                        event.target.value,
+                                    )
+                                }
+                                placeholder="Buscar por CNPJ"
+                            />
+                            <Select
+                                value={
+                                    filters.status === ''
+                                        ? 'all'
+                                        : filters.status
+                                }
+                                onValueChange={(value) =>
+                                    onFilterChange(
+                                        'status',
+                                        value === 'all' ? '' : value,
+                                    )
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Todos" />
+                                </SelectTrigger>
+                                <SelectContent align="start">
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    <SelectItem value="1">Ativo</SelectItem>
+                                    <SelectItem value="0">Inativo</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select
+                                value={filters.sort}
+                                onValueChange={(value) =>
+                                    onSortChange(
+                                        value as ContractorFilters['sort'],
+                                    )
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Ordenar por" />
+                                </SelectTrigger>
+                                <SelectContent align="start">
+                                    <SelectItem
+                                        value="name"
+                                        onClick={() => {
+                                            if (filters.sort === 'name') {
+                                                onSortChange('name');
+                                            }
+                                        }}
+                                    >
+                                        {filters.sort === 'name'
+                                            ? 'Nome *'
+                                            : 'Nome'}
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="cnpj"
+                                        onClick={() => {
+                                            if (filters.sort === 'cnpj') {
+                                                onSortChange('cnpj');
+                                            }
+                                        }}
+                                    >
+                                        {filters.sort === 'cnpj'
+                                            ? 'CNPJ *'
+                                            : 'CNPJ'}
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="active"
+                                        onClick={() => {
+                                            if (filters.sort === 'active') {
+                                                onSortChange('active');
+                                            }
+                                        }}
+                                    >
+                                        {filters.sort === 'active'
+                                            ? 'Status *'
+                                            : 'Status'}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="hidden overflow-x-auto rounded-lg border border-border/70 sm:block">
                             <Table className="min-w-[640px]">
                                 <TableHeader>
                                     <TableRow className="hover:bg-transparent">
@@ -405,6 +500,110 @@ export function ContractorsTable({
                                     ))}
                                 </TableBody>
                             </Table>
+                        </div>
+
+                        <div className="flex flex-col gap-3 sm:hidden">
+                            {contractors.data.map((contractor) => (
+                                <div
+                                    key={contractor.id}
+                                    className="cursor-pointer rounded-lg border border-border/70 bg-card p-4 transition-colors hover:bg-muted/20"
+                                    onClick={() => onView(contractor)}
+                                >
+                                    <div className="mb-3 flex items-start justify-between gap-3">
+                                        <span className="leading-tight font-medium">
+                                            {contractor.name}
+                                        </span>
+                                        <div
+                                            onClick={(event) =>
+                                                event.stopPropagation()
+                                            }
+                                        >
+                                            <StatusToggle
+                                                ariaLabel={`Alternar status de ${contractor.name}`}
+                                                checked={contractor.active}
+                                                disabled={
+                                                    updatingContractorId ===
+                                                    contractor.id
+                                                }
+                                                onPressedChange={() =>
+                                                    onStatusToggle(contractor)
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-3 space-y-1.5 text-sm text-muted-foreground">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span>CNPJ</span>
+                                            <span className="text-right">
+                                                {formatCnpj(contractor.cnpj)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        className="flex justify-end gap-2 border-t border-border/50 pt-3"
+                                        onClick={(event) =>
+                                            event.stopPropagation()
+                                        }
+                                    >
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="bg-muted/40 hover:bg-muted"
+                                            onClick={() => onEdit(contractor)}
+                                        >
+                                            <Pencil />
+                                        </Button>
+
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive"
+                                                >
+                                                    <Trash2 />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>
+                                                        Excluir contratante
+                                                    </DialogTitle>
+                                                    <DialogDescription>
+                                                        Essa ação remove{' '}
+                                                        {contractor.name}{' '}
+                                                        permanentemente.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <DialogFooter>
+                                                    <DialogClose asChild>
+                                                        <Button variant="outline">
+                                                            Cancelar
+                                                        </Button>
+                                                    </DialogClose>
+                                                    <Button
+                                                        variant="destructive"
+                                                        onClick={() => {
+                                                            router.delete(
+                                                                destroy(
+                                                                    contractor.id,
+                                                                ),
+                                                                {
+                                                                    preserveScroll: true,
+                                                                },
+                                                            );
+                                                        }}
+                                                    >
+                                                        Excluir
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">

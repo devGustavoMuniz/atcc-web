@@ -168,12 +168,211 @@ export function HealthUnitsTable({
                     </div>
                 ) : (
                     <>
-                        <div className="overflow-x-auto rounded-lg border border-border/70">
+                        <div className="flex flex-col gap-3 pb-4 sm:hidden">
+                            <Input
+                                value={filters.search_name}
+                                onChange={(event) =>
+                                    onFilterChange(
+                                        'search_name',
+                                        event.target.value,
+                                    )
+                                }
+                                placeholder="Buscar por nome"
+                            />
+                            <Select
+                                value={
+                                    filters.search_type === ''
+                                        ? 'all'
+                                        : filters.search_type
+                                }
+                                onValueChange={(value) =>
+                                    onFilterChange(
+                                        'search_type',
+                                        value === 'all' ? '' : value,
+                                    )
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Todos" />
+                                </SelectTrigger>
+                                <SelectContent align="start">
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    <SelectItem value="ubs">UBS</SelectItem>
+                                    <SelectItem value="upa">UPA</SelectItem>
+                                    <SelectItem value="hospital">
+                                        Hospital
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Input
+                                value={filters.search_city}
+                                onChange={(event) =>
+                                    onFilterChange(
+                                        'search_city',
+                                        event.target.value,
+                                    )
+                                }
+                                placeholder="Buscar por cidade"
+                            />
+                            <Select
+                                value={
+                                    filters.search_complexity === ''
+                                        ? 'all'
+                                        : filters.search_complexity
+                                }
+                                onValueChange={(value) =>
+                                    onFilterChange(
+                                        'search_complexity',
+                                        value === 'all' ? '' : value,
+                                    )
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Todos" />
+                                </SelectTrigger>
+                                <SelectContent align="start">
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    <SelectItem value="low">Baixa</SelectItem>
+                                    <SelectItem value="medium">
+                                        Média
+                                    </SelectItem>
+                                    <SelectItem value="high">Alta</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {isAdmin ? (
+                                <Select
+                                    value={
+                                        filters.contractor_id === ''
+                                            ? 'all'
+                                            : filters.contractor_id
+                                    }
+                                    onValueChange={(value) =>
+                                        onFilterChange(
+                                            'contractor_id',
+                                            value === 'all' ? '' : value,
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Todos" />
+                                    </SelectTrigger>
+                                    <SelectContent align="start">
+                                        <SelectItem value="all">
+                                            Todos
+                                        </SelectItem>
+                                        {contractors.map((contractor) => (
+                                            <SelectItem
+                                                key={contractor.id}
+                                                value={String(contractor.id)}
+                                            >
+                                                {contractor.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : null}
+                            <Select
+                                value={
+                                    filters.status === ''
+                                        ? 'all'
+                                        : filters.status
+                                }
+                                onValueChange={(value) =>
+                                    onFilterChange(
+                                        'status',
+                                        value === 'all' ? '' : value,
+                                    )
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Todos" />
+                                </SelectTrigger>
+                                <SelectContent align="start">
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    <SelectItem value="1">Ativo</SelectItem>
+                                    <SelectItem value="0">Inativo</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select
+                                value={filters.sort}
+                                onValueChange={(value) =>
+                                    onSortChange(
+                                        value as HealthUnitFilters['sort'],
+                                    )
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Ordenar por" />
+                                </SelectTrigger>
+                                <SelectContent align="start">
+                                    <SelectItem
+                                        value="name"
+                                        onClick={() => {
+                                            if (filters.sort === 'name') {
+                                                onSortChange('name');
+                                            }
+                                        }}
+                                    >
+                                        {filters.sort === 'name'
+                                            ? 'Nome *'
+                                            : 'Nome'}
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="type"
+                                        onClick={() => {
+                                            if (filters.sort === 'type') {
+                                                onSortChange('type');
+                                            }
+                                        }}
+                                    >
+                                        {filters.sort === 'type'
+                                            ? 'Tipo *'
+                                            : 'Tipo'}
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="city"
+                                        onClick={() => {
+                                            if (filters.sort === 'city') {
+                                                onSortChange('city');
+                                            }
+                                        }}
+                                    >
+                                        {filters.sort === 'city'
+                                            ? 'Cidade *'
+                                            : 'Cidade'}
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="complexity"
+                                        onClick={() => {
+                                            if (filters.sort === 'complexity') {
+                                                onSortChange('complexity');
+                                            }
+                                        }}
+                                    >
+                                        {filters.sort === 'complexity'
+                                            ? 'Complexidade *'
+                                            : 'Complexidade'}
+                                    </SelectItem>
+                                    <SelectItem
+                                        value="active"
+                                        onClick={() => {
+                                            if (filters.sort === 'active') {
+                                                onSortChange('active');
+                                            }
+                                        }}
+                                    >
+                                        {filters.sort === 'active'
+                                            ? 'Status *'
+                                            : 'Status'}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="hidden overflow-x-auto rounded-lg border border-border/70 sm:block">
                             <Table
                                 className={
-                                    isAdmin
-                                        ? 'min-w-[1180px]'
-                                        : 'min-w-[960px]'
+                                    isAdmin ? 'min-w-[1180px]' : 'min-w-[960px]'
                                 }
                             >
                                 <TableHeader>
@@ -513,7 +712,8 @@ export function HealthUnitsTable({
                                                     >
                                                         {
                                                             healthUnitComplexityLabels[
-                                                                healthUnit.complexity
+                                                                healthUnit
+                                                                    .complexity
                                                             ]
                                                         }
                                                     </Badge>
@@ -602,8 +802,7 @@ export function HealthUnitsTable({
                                                                     <DialogTitle>
                                                                         Excluir
                                                                         unidade
-                                                                        de
-                                                                        saúde
+                                                                        de saúde
                                                                     </DialogTitle>
                                                                     <DialogDescription>
                                                                         Essa
@@ -648,6 +847,144 @@ export function HealthUnitsTable({
                                     ))}
                                 </TableBody>
                             </Table>
+                        </div>
+
+                        <div className="flex flex-col gap-3 sm:hidden">
+                            {healthUnits.data.map((healthUnit) => (
+                                <div
+                                    key={healthUnit.id}
+                                    className="cursor-pointer rounded-lg border border-border/70 bg-card p-4 transition-colors hover:bg-muted/20"
+                                    onClick={() => onView(healthUnit)}
+                                >
+                                    <div className="mb-3 flex items-start justify-between gap-3">
+                                        <span className="leading-tight font-medium">
+                                            {healthUnit.name}
+                                        </span>
+                                        <div
+                                            onClick={(event) =>
+                                                event.stopPropagation()
+                                            }
+                                        >
+                                            <StatusToggle
+                                                ariaLabel={`Alternar status de ${healthUnit.name}`}
+                                                checked={healthUnit.active}
+                                                disabled={
+                                                    updatingHealthUnitId ===
+                                                    healthUnit.id
+                                                }
+                                                onPressedChange={() =>
+                                                    onStatusToggle(healthUnit)
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-3 space-y-1.5 text-sm text-muted-foreground">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span>Tipo</span>
+                                            <span className="text-right">
+                                                {
+                                                    healthUnitTypeLabels[
+                                                        healthUnit.type
+                                                    ]
+                                                }
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span>Cidade</span>
+                                            <span className="text-right">
+                                                {healthUnit.city}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span>Complexidade</span>
+                                            <Badge
+                                                variant={getComplexityBadgeVariant(
+                                                    healthUnit.complexity,
+                                                )}
+                                            >
+                                                {
+                                                    healthUnitComplexityLabels[
+                                                        healthUnit.complexity
+                                                    ]
+                                                }
+                                            </Badge>
+                                        </div>
+                                        {isAdmin ? (
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span>Contratante</span>
+                                                <span className="text-right">
+                                                    {healthUnit.contractor
+                                                        ?.name ??
+                                                        'Não vinculada'}
+                                                </span>
+                                            </div>
+                                        ) : null}
+                                    </div>
+
+                                    <div
+                                        className="flex justify-end gap-2 border-t border-border/50 pt-3"
+                                        onClick={(event) =>
+                                            event.stopPropagation()
+                                        }
+                                    >
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="bg-muted/40 hover:bg-muted"
+                                            onClick={() => onEdit(healthUnit)}
+                                        >
+                                            <Pencil />
+                                        </Button>
+
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive"
+                                                >
+                                                    <Trash2 />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>
+                                                        Excluir unidade de saúde
+                                                    </DialogTitle>
+                                                    <DialogDescription>
+                                                        Essa ação remove{' '}
+                                                        {healthUnit.name}{' '}
+                                                        permanentemente.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <DialogFooter>
+                                                    <DialogClose asChild>
+                                                        <Button variant="outline">
+                                                            Cancelar
+                                                        </Button>
+                                                    </DialogClose>
+                                                    <Button
+                                                        variant="destructive"
+                                                        onClick={() => {
+                                                            router.delete(
+                                                                destroyRoute(
+                                                                    healthUnit.id,
+                                                                ),
+                                                                {
+                                                                    preserveScroll: true,
+                                                                },
+                                                            );
+                                                        }}
+                                                    >
+                                                        Excluir
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
