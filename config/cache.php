@@ -39,6 +39,11 @@ return [
             'serialize' => false,
         ],
 
+        'pulse' => [
+            'driver' => 'array',
+            'serialize' => false,
+        ],
+
         'database' => [
             'driver' => 'database',
             'connection' => env('DB_CACHE_CONNECTION'),

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2 } from 'lucide-react';
+import { Activity, FileText, Telescope } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -16,16 +16,21 @@ import {
 import { getMainNavItems } from '@/config/nav';
 import type { Auth, NavItem } from '@/types';
 
-const footerNavItems: NavItem[] = [
+const adminDevToolsItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
+        title: 'Telescope',
+        href: '/telescope',
+        icon: Telescope,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Pulse',
+        href: '/pulse',
+        icon: Activity,
+    },
+    {
+        title: 'Log Viewer',
+        href: '/log-viewer',
+        icon: FileText,
     },
 ];
 
@@ -33,6 +38,7 @@ export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
     const mainNavItems = getMainNavItems(auth.user.role ?? '');
     const dashboardHref = mainNavItems[0]?.href ?? '#';
+    const isAdmin = auth.user.role === 'admin';
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -53,7 +59,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {isAdmin && <NavFooter items={adminDevToolsItems} className="mt-auto" />}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
