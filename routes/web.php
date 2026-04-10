@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\ContractorController;
 use App\Http\Controllers\Admin\HealthUnitController as AdminHealthUnitController;
@@ -7,11 +8,18 @@ use App\Http\Controllers\Admin\ManagerController;
 use App\Http\Controllers\Manager\HealthUnitController as ManagerHealthUnitController;
 use App\Http\Controllers\Manager\ManagerDashboardController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', function () {
+    if (! auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    return match (auth()->user()->role) {
+        UserRole::Admin => redirect()->route('admin.dashboard'),
+        UserRole::Gestor => redirect()->route('manager.dashboard'),
+        default => redirect()->route('dashboard'),
+    };
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');

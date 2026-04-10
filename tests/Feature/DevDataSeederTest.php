@@ -43,6 +43,8 @@ test('database seeder loads development data in the local environment', function
 });
 
 test('development data seeder is idempotent after the initial load', function () {
+    $this->app['env'] = 'local';
+
     $this->seed(DatabaseSeeder::class);
     $this->seed(DevDataSeeder::class);
     $this->seed(DevDataSeeder::class);

@@ -21,6 +21,12 @@ class DevDataSeeder extends Seeder
 
     public function run(): void
     {
+        if (! app()->environment('local')) {
+            $this->command?->info('DevDataSeeder ignorado: ambiente não é local.');
+
+            return;
+        }
+
         if (Contractor::query()->count() > 5) {
             $this->command?->info('DevDataSeeder ignorado: dados de desenvolvimento já parecem existir.');
 
