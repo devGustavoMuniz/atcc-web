@@ -465,7 +465,13 @@ export function ContractorsTable({
                                                                     Excluir
                                                                 </TooltipContent>
                                                             </Tooltip>
-                                                            <DialogContent>
+                                                            <DialogContent
+                                                                onClick={(
+                                                                    event,
+                                                                ) =>
+                                                                    event.stopPropagation()
+                                                                }
+                                                            >
                                                                 <DialogHeader>
                                                                     <DialogTitle>
                                                                         Excluir
@@ -589,7 +595,11 @@ export function ContractorsTable({
                                                     <Trash2 />
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent>
+                                            <DialogContent
+                                                onClick={(event) =>
+                                                    event.stopPropagation()
+                                                }
+                                            >
                                                 <DialogHeader>
                                                     <DialogTitle>
                                                         Excluir contratante

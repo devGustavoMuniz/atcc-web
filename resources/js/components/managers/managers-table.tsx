@@ -546,7 +546,13 @@ export function ManagersTable({
                                                                     Excluir
                                                                 </TooltipContent>
                                                             </Tooltip>
-                                                            <DialogContent>
+                                                            <DialogContent
+                                                                onClick={(
+                                                                    event,
+                                                                ) =>
+                                                                    event.stopPropagation()
+                                                                }
+                                                            >
                                                                 <DialogHeader>
                                                                     <DialogTitle>
                                                                         Excluir
@@ -678,7 +684,11 @@ export function ManagersTable({
                                                     <Trash2 />
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent>
+                                            <DialogContent
+                                                onClick={(event) =>
+                                                    event.stopPropagation()
+                                                }
+                                            >
                                                 <DialogHeader>
                                                     <DialogTitle>
                                                         Excluir gestor

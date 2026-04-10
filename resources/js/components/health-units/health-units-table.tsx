@@ -811,7 +811,13 @@ export function HealthUnitsTable({
                                                                     Excluir
                                                                 </TooltipContent>
                                                             </Tooltip>
-                                                            <DialogContent>
+                                                            <DialogContent
+                                                                onClick={(
+                                                                    event,
+                                                                ) =>
+                                                                    event.stopPropagation()
+                                                                }
+                                                            >
                                                                 <DialogHeader>
                                                                     <DialogTitle>
                                                                         Excluir
@@ -970,7 +976,11 @@ export function HealthUnitsTable({
                                                     <Trash2 />
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent>
+                                            <DialogContent
+                                                onClick={(event) =>
+                                                    event.stopPropagation()
+                                                }
+                                            >
                                                 <DialogHeader>
                                                     <DialogTitle>
                                                         Excluir unidade de saúde
