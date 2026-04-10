@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             ContractorSeeder::class,
             RolesSeeder::class,
             HealthUnitSeeder::class,
+            DevDataSeeder::class
         ]);
     }
 }
